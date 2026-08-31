@@ -24,24 +24,36 @@ Headline findings:
 - **No category labels ship with this data delivery.** Decision: don't
   block on a corrected download - built an unsupervised-clustering proxy
   instead (20 clusters, real imbalance found: 12 to 526 images per
-  cluster, 43.8x ratio). These are proxy groups for validation-split
-  design, not verified NFFA category names.
-- **Scale-bar/info-panel overlays quantified: 10/4,785 (0.21%)** - low
-  prevalence, exact file list known. Checked whether they contaminate the
-  noise-model fit: **no** - the apparent 2.5x higher noise in bar regions
-  is fully explained by their higher average brightness once normalized
-  the multiplicative way (ratio drops to 1.003x); masking wasn't
-  necessary for the noise fit, though the 10 files remain a known
-  candidate exclusion for training given they contain non-specimen
-  content.
-- **Noise-model family, tested rigorously on all 4,775 non-bar pairs:**
-  a compound model (quadratic multiplicative term + linear Poisson-like
-  term) fits dramatically better (R²=0.9997) than either a pure Gamma-
-  multiplicative model (R²=0.9926, Phase 1's model) or a pure Poisson
-  model (R²=0.9719) alone. Real, non-trivial contributions from both
-  terms - physically consistent with real SEM detector physics (Poisson
-  electron counting plus multiplicative detector gain), not assumed
-  from a first-pass fit that "looked reasonable."
+  cluster, 43.8x ratio). These are proxy groups, not verified NFFA
+  category names. **Train/val split built STRATIFIED per cluster** (not
+  Phase 1's whole-cluster assignment) so every cluster - even the n=12
+  one - has guaranteed representation in both splits: 4,069 train / 716
+  val, verified programmatically.
+- **Scale-bar/info-panel overlays quantified: 10/4,785 (0.21%).** Excluded
+  from all training/fitting going forward (permanent, re-derivable list:
+  `reports/scale_bar_excluded_files.txt`). Checked whether they
+  contaminate the noise-model fit: no - the apparent 2.5x higher noise in
+  bar regions is fully explained by their higher average brightness once
+  normalized the multiplicative way (ratio drops to 1.003x); masking
+  wasn't structurally necessary for the fit, but the files are excluded
+  anyway since they contain non-specimen content.
+- **Noise model: the compound model is ADOPTED as the real Phase 2 noise
+  model, replacing Phase 1's pure-Gamma.** Tested rigorously on all 4,775
+  non-bar pairs: compound (quadratic multiplicative + linear Poisson-like
+  term) fits dramatically better (R²=0.9997) than pure Gamma (R²=0.9926,
+  Phase 1's model) or pure Poisson (R²=0.9719) alone - physically
+  consistent with real SEM detector physics (Poisson electron counting
+  plus multiplicative detector gain). **Fully characterized via 200
+  bootstrap fits**: L_gain (multiplicative) mean 39.3, range 29.7-50.6;
+  K_poisson (shot-noise) mean 104.4, range 76.9-214.2; σ_A (additive
+  floor) small, often near-zero. Real per-cluster variation found beyond
+  bootstrap noise (L_gain 29-80, K_poisson 46-364 across clusters) - the
+  Phase 2 analogue of Phase 1's "randomize L across its full range"
+  finding. A secondary S-shaped residual-bias finding was investigated,
+  not left loose: not explained by a simple linear effect, but a cubic
+  empirical correction captures 99.4% of it, documented as a known minor
+  approximation (same pattern as Phase 1's own unexplained
+  brightness-overprediction).
 
 **Phase 1's fitted noise-model numbers (Gamma L range, additive σ, etc.) do
 NOT apply to this dataset** and are not carried over anywhere in this repo.

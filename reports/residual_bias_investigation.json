@@ -1,0 +1,22 @@
+{
+  "max_abs_bias": 0.007222338062596365,
+  "max_bias_pct_of_local_std": 11.946413048621508,
+  "linear_fit": {
+    "coeffs_highest_first": [
+      0.013465741263177762,
+      -0.005592823441930727
+    ],
+    "r2": 0.8104046978679215
+  },
+  "cubic_fit": {
+    "coeffs_highest_first": [
+      -0.09807564283664581,
+      0.15060582680908693,
+      -0.0489269293529165,
+      -7.90540460772593e-05
+    ],
+    "r2": 0.9944415211962853
+  },
+  "max_abs_residual_after_cubic_correction": 0.0006690563810897018,
+  "conclusion": "Systematic S-shaped brightness-dependent mean-residual bias exists (max 0.0072, up to ~12pct of local noise std at low brightness). NOT explained by a simple linear E[M]!=1 effect (linear R2=0.81, insufficient). A cubic empirical correction captures it almost perfectly (R2=0.994), reducing residual-after-correction to <0.0007 everywhere (<0.6pct of noise std). Root physical mechanism not identified - documented as a known minor approximation with an empirical correction, same pattern as Phase 1 handling its own unexplained brightness-overprediction effect, rather than left unresolved."
+}
