@@ -1,0 +1,46 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+
+# Large data - never commit, README documents expected layout
+/data/**
+!/data/README.md
+
+# Trained weights are large - document where to get/regenerate them, don't commit by default
+checkpoints/*.pt
+checkpoints/*.pth
+!checkpoints/.gitkeep
+
+# Generated outputs
+outputs/*
+!outputs/.gitkeep
+
+# Lesson carried over from the Phase 1 (KLA PS01) repo: figures under
+# reports/figures/ are deliberately NOT blanket-ignored. A blanket
+# "reports/figures/*.png" rule there once silently excluded every real
+# analysis figure from every commit until it was caught. If a genuinely
+# disposable debug image needs excluding here, ignore it by exact
+# filename/prefix, never by a blanket pattern.
+
+# Chunked-upload scratch artifacts (Kaggle dataset/code upload workflow) -
+# never commit, the actual uploads already landed on Kaggle/GitHub
+/_data_chunks/
+/_to_delete_data_chunks/
+/_split.log
+/*.zip
+
+# Scratch working files from scripts/scale_generalization_test.py (raw
+# .npy inputs/outputs) - the deliverable is the summary CSV it also
+# writes to reports/, not these intermediates
+reports/_scale_gen_test_tmp/
+
+# scripts/quick_test_visualize.py output - ad-hoc personal confidence-checks
+# and PPT example-pulling, not project deliverables. Narrowly scoped by
+# exact filename prefix (not a blanket reports/figures/*.png rule - see the
+# comment above re: the prior incident where a blanket rule swallowed real
+# deliverables). Working temp dir also excluded.
+reports/figures/quick_test_*.png
+reports/figures/_quick_test_tmp/

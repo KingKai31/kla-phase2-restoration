@@ -1,0 +1,31 @@
+{
+  "pairing": {
+    "n_gt": 4785,
+    "n_noisy": 4785,
+    "perfectly_paired": true,
+    "in_gt_not_noisy": 0,
+    "in_noisy_not_gt": 0
+  },
+  "gt_shapes": {
+    "(256, 256)": 4785
+  },
+  "noisy_shapes": {
+    "(128, 128)": 4785
+  },
+  "noise_diagnostic": {
+    "n_images_sampled": 100,
+    "images_with_any_negative_pixel": 43,
+    "mean_negative_pixel_fraction": 0.000469970703125,
+    "max_negative_pixel_fraction": 0.01409912109375,
+    "global_min_noisy_pixel_seen": -0.11304707080125809,
+    "global_max_noisy_pixel_seen": 2.1869468688964844,
+    "ratio_mean": 0.9961859841279574,
+    "ratio_median": 0.98425546236102,
+    "ratio_std": 0.2214762789390198,
+    "ratio_skewness": 0.4007734778950404,
+    "ratio_excess_kurtosis": 1.2310204569820336,
+    "gamma_fit_shape_L": 19.60984458572976,
+    "gamma_fit_scale": 0.05080648172250813,
+    "gamma_fit_implied_mean": 0.996307210526104
+  }
+}
