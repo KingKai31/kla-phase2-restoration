@@ -9,28 +9,39 @@ categories, 4,785 GT/NoisyLR pairs.
 
 ## Status
 
-**Data-understanding pass complete.** No model has been trained, no
-architecture decisions have been made yet - see
-[reports/phase2_data_inventory.md](reports/phase2_data_inventory.md) for
-the full findings (real evidence, real figures, not assumptions carried
-over from Phase 1).
+**Data-understanding pass and deep-dive follow-up complete.** No model has
+been trained, no architecture decisions have been made yet - see
+[reports/phase2_data_inventory.md](reports/phase2_data_inventory.md) (raw
+inventory) and [reports/phase2_deep_dive.md](reports/phase2_deep_dive.md)
+(clustering proxy, scale-bar investigation, noise-model comparison) for
+the full findings - real evidence, real figures, real numbers on the full
+4,785-pair dataset, not assumptions carried over from Phase 1.
 
 Headline findings:
 - Structurally very similar to Phase 1's data convention (GT/NoisyLR
   folders, `.npy` format, 256↔128 only, GT strictly `[0,1]`, NoisyLR
   overshoots both directions, negative pixels present).
-- **No category labels ship with this data delivery** - the source
-  dataset's 10-category taxonomy is documented, but nothing in the files
-  links a specific image to a specific category. Open decision needed on
-  how to proceed (see the inventory doc's Task 3 section).
-- First-pass noise-model check: Phase 1's Gamma-multiplicative-plus-
-  additive shape looks like a reasonable starting hypothesis here too, but
-  distinguishing it from a physically-plausible Poisson-shot-noise
-  alternative needs the brightness-dependent heteroscedasticity check
-  Phase 1 did - not yet done, correctly deferred to the next phase.
-- Real, unquantified finding: at least one image has a burned-in SEM
-  scale-bar annotation in the pixel data - prevalence across the full
-  dataset not yet checked.
+- **No category labels ship with this data delivery.** Decision: don't
+  block on a corrected download - built an unsupervised-clustering proxy
+  instead (20 clusters, real imbalance found: 12 to 526 images per
+  cluster, 43.8x ratio). These are proxy groups for validation-split
+  design, not verified NFFA category names.
+- **Scale-bar/info-panel overlays quantified: 10/4,785 (0.21%)** - low
+  prevalence, exact file list known. Checked whether they contaminate the
+  noise-model fit: **no** - the apparent 2.5x higher noise in bar regions
+  is fully explained by their higher average brightness once normalized
+  the multiplicative way (ratio drops to 1.003x); masking wasn't
+  necessary for the noise fit, though the 10 files remain a known
+  candidate exclusion for training given they contain non-specimen
+  content.
+- **Noise-model family, tested rigorously on all 4,775 non-bar pairs:**
+  a compound model (quadratic multiplicative term + linear Poisson-like
+  term) fits dramatically better (R²=0.9997) than either a pure Gamma-
+  multiplicative model (R²=0.9926, Phase 1's model) or a pure Poisson
+  model (R²=0.9719) alone. Real, non-trivial contributions from both
+  terms - physically consistent with real SEM detector physics (Poisson
+  electron counting plus multiplicative detector gain), not assumed
+  from a first-pass fit that "looked reasonable."
 
 **Phase 1's fitted noise-model numbers (Gamma L range, additive σ, etc.) do
 NOT apply to this dataset** and are not carried over anywhere in this repo.

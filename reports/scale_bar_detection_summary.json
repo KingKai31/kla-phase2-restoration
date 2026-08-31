@@ -1,0 +1,23 @@
+{
+  "n_total": 4785,
+  "n_flagged": 10,
+  "prevalence_pct": 0.209,
+  "n_excluded_known_false_positives": 1,
+  "side_counts": {
+    "below": 9,
+    "above": 1
+  },
+  "flagged_bar_height_frac_mean": 0.433984375,
+  "flagged_files": [
+    "000007.npy",
+    "000934.npy",
+    "001106.npy",
+    "003240.npy",
+    "003717.npy",
+    "003910.npy",
+    "003915.npy",
+    "003923.npy",
+    "004287.npy",
+    "004326.npy"
+  ]
+}
