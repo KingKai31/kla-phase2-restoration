@@ -292,14 +292,110 @@ this full range" finding, and should be treated the same way: **the
 synthetic generator should randomize (L_gain, K_poisson, σ_A) across
 their full measured ranges, not use one fixed triple.**
 
-**One real anomaly flagged, not smoothed over:** cluster 18 (n=93) fit to
-`L_gain=239, K_poisson=31` - qualitatively different from every other
-cluster (all others cluster in the 29-90 / 46-364 ranges above). Possible
-causes not yet distinguished: a genuinely different acquisition/detector
-setting for that sub-population, an unstable fit from a narrow brightness
-range within those specific 93 images, or a real but small outlier group.
-**Not resolved here** - flagged as a concrete follow-up if cluster 18's
-images matter to a future training decision, not swept under the rug.
+**Cluster 18 anomaly - bounded follow-up check, done:** cluster 18 (n=93,
+1.94% of data) fit to `L_gain=239, K_poisson=31` - qualitatively different
+from every other cluster. A short, focused check (5 sample images
+visually inspected: `reports/figures/cluster18_samples.png`, plus pooled
+pixel-level brightness stats) found a **plausible, evidence-backed partial
+explanation, not a fully certain one**: this cluster's images are
+consistently **dark, low-brightness specimen textures** (visually: fine
+cellular-network and speckled patterns on a dark background) - pooled
+pixel median brightness **0.217**, versus ~0.38 for two comparably-sized
+normal clusters checked (8 and 0), and only **0.43% of its pixels exceed
+brightness 0.8** versus 2.4-4.0% for the comparison clusters. With so few
+high-brightness samples to constrain the quadratic term, the compound
+model's `a` (quadratic) vs. `c` (linear) coefficients become poorly
+separable for this cluster specifically - a known regression-stability
+issue with polynomial fits over a compressed input range, not necessarily
+evidence of a genuinely different physical noise mechanism.
+
+**Documented as a known limitation, not fully resolved:** cluster 18
+(n=93, ~1.9% of data) shows a distinct noise-regime *fit* not captured by
+the population-level parameter ranges above - most likely (not certain)
+driven by its unusually narrow, low-brightness pixel distribution making
+its own compound-model fit unstable, rather than a confirmed different
+physical detector regime. Synthetic data generation (Part 5, below) draws
+from the full population-level distribution, which may underrepresent
+this specific dark-image regime if it is in fact physically distinct -
+flagged for anyone extending this work, not chased further per the
+explicit time-box on this check.
+
+---
+
+## Part 5 — Synthetic data generator
+
+**Module:** `src/datasets/synthetic_degrade.py`, class `CompoundNoiseDegrader`
+(mirrors Phase 1's `SpeckleAdditiveDegrader` structure). Implements:
+
+```
+NoisyLR = box_downsample(GT, 2) * M + sqrt(box_downsample(GT,2)/K) * Z + A + bias(x)
+  M ~ Gamma(L_gain, 1/L_gain), mean 1        (multiplicative detector gain)
+  Z ~ N(0, 1)                                 (Poisson shot noise, Gaussian-approximated)
+  A ~ N(0, sigma_A)                           (constant read-noise floor)
+  bias(x)                                     cubic empirical correction (Part 3)
+```
+
+`(L_gain, K_poisson, sigma_A)` are drawn **per generated image from the 17
+real per-cluster fitted triples** (`reports/compound_model_per_cluster_fits.csv`,
+excluding cluster 18 and the two too-small clusters) - real measured
+population diversity, the same "sample from real per-source fits, don't
+use one fixed value" principle as Phase 1's L pool. No blur kernel is
+modeled (same as Phase 1, for the same reason - this pass focused on the
+noise model family, not spatial blur; revisit if the FFT check below shows
+a spectral gap wide enough to matter).
+
+---
+
+## Part 6 — Insurance check: does synthetic data actually look real?
+
+**Script:** `scripts/insurance_check.py`, same methodology as Phase 1's
+insurance check (statistical, spectral, visual), run against **200 real
+held-out (val-split) pairs** the generator was calibrated on in aggregate
+but not fit to individually. Full numbers: `reports/phase2_insurance_check_summary.json`.
+
+**Bulk statistics match strongly:**
+
+| | real mean | synth mean | KS stat | KS p-value |
+|---|---|---|---|---|
+| per-image mean | 0.441 | 0.441 | 0.020 | 0.9999 (no difference) |
+| per-image std | 0.185 | 0.183 | 0.045 | 0.988 (no difference) |
+| per-image min | -0.004 | -0.003 | 0.135 | 0.052 (borderline) |
+| per-image max | 1.430 | 1.366 | 0.195 | **0.001 (real difference)** |
+
+**Visual grid** (`reports/figures/phase2_insurance_check_visual_grid.png`,
+6 diverse samples - metal edge, granular texture, sharp geometric edge,
+cellular network, wire/fibre structures, flat granular surface): synthetic
+NoisyLR is visually convincing against real NoisyLR across all 6, no
+obvious distinguishing artifact at a glance.
+
+**Two real, disclosed gaps, not hidden:**
+
+1. **Extreme-value (max) mismatch, confirmed by KS test.** Real data has
+   a somewhat heavier right tail than this model produces - likely because
+   the Gaussian approximations used for the shot-noise and read-noise
+   terms are lighter-tailed than whatever the true noise process is.
+   Consistent with Phase 1's own earlier finding that real additive
+   residuals have "heavier-than-Gaussian tails" (excess kurtosis ~2.7) -
+   the same class of approximation, now re-observed on different data.
+2. **High-frequency spectral deficit**
+   (`reports/figures/phase2_insurance_check_radial_spectrum.png`):
+   low-to-mid frequencies match almost perfectly (<2% mismatch), but
+   synthetic power falls increasingly short of real power at high spatial
+   frequencies, reaching **~22% less power at the highest frequencies
+   checked**. Plausible cause: this generator applies i.i.d. per-pixel
+   noise, and real noise may carry some spatial correlation this doesn't
+   capture (structurally the same class of gap Phase 1 found in its own
+   insurance check, ~10-22% in a mid-frequency band, attributed there to
+   noise being injected before downsampling).
+
+**Verdict: convincing enough to proceed, gaps disclosed rather than
+hidden.** The statistics that matter most for training realism (mean,
+std, overall visual appearance) match strongly; the two gaps found are
+specific, bounded, and of a similar kind and magnitude to gaps Phase 1
+itself judged low-impact and proceeded past. Not claiming a perfect match
+- if training results ever show artifacts traceable to extreme highlights
+or fine high-frequency texture specifically, these two flagged gaps are
+the first place to look.
 
 ---
 
@@ -310,8 +406,9 @@ model (`Var(x) = a·x² + c·x + e`) is adopted as the Phase 2 noise model,
 replacing Phase 1's pure-multiplicative form - a stronger, more physically
 grounded fit (R²=0.9997 vs. 0.9926) that matches real SEM detector physics
 (Poisson electron-counting noise plus multiplicative detector gain) rather
-than an ad-hoc curve fit. The synthetic generator should sample
-`(L_gain, K_poisson, σ_A)` from their full measured bootstrap/per-cluster
-ranges above (not a single fixed triple), and should apply the cubic
-brightness-dependent mean-bias correction characterized above so generated
-data reproduces this measured effect rather than ignoring it.
+than an ad-hoc curve fit. The synthetic generator (Part 5) samples
+`(L_gain, K_poisson, σ_A)` from their full measured per-cluster ranges (not
+a single fixed triple) and applies the cubic brightness-dependent
+mean-bias correction (Part 3), and has been validated against real
+held-out data (Part 6) with two specific, disclosed gaps rather than an
+unverified assumption that it works.

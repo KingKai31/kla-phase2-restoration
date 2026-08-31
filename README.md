@@ -9,13 +9,29 @@ categories, 4,785 GT/NoisyLR pairs.
 
 ## Status
 
-**Data-understanding pass and deep-dive follow-up complete.** No model has
-been trained, no architecture decisions have been made yet - see
+**Data understanding, noise-model characterization, and a validated
+synthetic generator are complete. No restoration model has been trained
+and no architecture decisions have been made yet** - see
 [reports/phase2_data_inventory.md](reports/phase2_data_inventory.md) (raw
 inventory) and [reports/phase2_deep_dive.md](reports/phase2_deep_dive.md)
-(clustering proxy, scale-bar investigation, noise-model comparison) for
-the full findings - real evidence, real figures, real numbers on the full
+(clustering proxy, scale-bar investigation, noise-model comparison,
+parameter characterization, synthetic generator, insurance check) for the
+full findings - real evidence, real figures, real numbers on the full
 4,785-pair dataset, not assumptions carried over from Phase 1.
+
+**Noise model finalized, synthetic generator built and validated**
+(`src/datasets/synthetic_degrade.py`, `CompoundNoiseDegrader`). Insurance
+check against 200 real held-out pairs: bulk statistics (mean, std) match
+strongly (KS tests find no significant difference), visual samples across
+6 diverse specimen types are convincing. Two real, disclosed gaps: a
+heavier real-data tail in extreme max values than the Gaussian
+approximation produces (KS p=0.001), and a ~22% high-frequency spectral
+deficit at the highest spatial frequencies checked - both flagged
+explicitly, of similar kind/magnitude to gaps Phase 1 itself judged
+low-impact and proceeded past. Cluster 18's noise-fit anomaly was checked
+(bounded, time-boxed investigation) and plausibly explained by its
+unusually dark/low-brightness image content destabilizing its own
+per-cluster fit - not fully certain, documented as a known limitation.
 
 Headline findings:
 - Structurally very similar to Phase 1's data convention (GT/NoisyLR
