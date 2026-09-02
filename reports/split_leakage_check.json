@@ -1,0 +1,39 @@
+{
+  "summary": {
+    "n_images": 4785,
+    "hash_bits": 256,
+    "match_threshold": 10,
+    "n_cross_split_leaking_pairs": 4,
+    "n_within_split_near_duplicates": 14
+  },
+  "leaking_pairs": [
+    {
+      "file_a": "001775.npy",
+      "split_a": "val",
+      "file_b": "002751.npy",
+      "split_b": "train",
+      "hamming_distance": 9
+    },
+    {
+      "file_a": "000242.npy",
+      "split_a": "val",
+      "file_b": "001064.npy",
+      "split_b": "train",
+      "hamming_distance": 3
+    },
+    {
+      "file_a": "003152.npy",
+      "split_a": "train",
+      "file_b": "003928.npy",
+      "split_b": "val",
+      "hamming_distance": 1
+    },
+    {
+      "file_a": "002906.npy",
+      "split_a": "val",
+      "file_b": "003047.npy",
+      "split_b": "train",
+      "hamming_distance": 0
+    }
+  ]
+}
