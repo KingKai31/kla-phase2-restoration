@@ -5,6 +5,14 @@ re-verified against the exact shipped checkpoint and the exact
 `requirements.txt`/`submission_requirements.txt` files as they currently
 exist. Full detail: `reports/run_py_compliance_checklist.md`.
 
+**Post-ship technical hardening pass** (5 axes - reconstruction quality,
+perceptual quality, generalization evidence, architecture, defect
+relevance - each pre-registered and tested with real evidence): the
+shipped model is unchanged by this pass. Every comparison either
+confirmed Stage A was already well-chosen or surfaced a real, disclosed
+limitation that a cheap fix did not resolve. Full consolidated summary:
+`reports/TECHNICAL_HARDENING_PASS_SUMMARY.md`.
+
 ---
 
 ## A. Hard-gate requirements
@@ -140,13 +148,25 @@ available, not assumed necessary.
 
 ## D. Known limitations (disclosed, not hidden)
 
-- **Only 4 of 10 real NFFA-EUROPE categories were downloaded and used**
-  (Biological, Fibres, Films_Coated_Surface for Task C's synthetic data;
-  MEMS_devices_and_electrodes finished too late to fold in before Stage B
-  ran). The remaining 6 categories were left downloading at low priority
-  in the background per explicit instruction not to block on them - final
-  status depends on whether the pod's disk holds out (see the disk-risk
-  flag in `reports/STAGE_B_RESULTS.md`).
+- **Only 4 of 10 real NFFA-EUROPE categories were ever downloaded and
+  used** (Biological, Fibres, Films_Coated_Surface, and later
+  MEMS_devices_and_electrodes, folded into the technical hardening
+  pass's Axis 1a). The remaining 6 categories were not pursued further -
+  a real per-pod disk quota (see
+  `reports/HARDENING_DISK_QUOTA_INCIDENT.md`) made continuing the
+  download risky, and Axis 1a already showed a 4th category didn't
+  change the outcome, so there was no strong case to keep chasing more.
+- **The model preserves real structural edges worse than a naive
+  classical baseline on out-of-domain content** (68.7% vs. 88.1% edge
+  magnitude at real annotated boundaries, Ni-WC external data,
+  technical hardening pass Axis 5) - a real, disclosed gap; doubling the
+  existing Sobel loss weight (the cheapest available fix) did not close
+  it.
+- **The synthetic generator's spectral deficit is confirmed as a
+  generation-mechanism problem, not a data-volume one** (technical
+  hardening pass Axis 1a: a 43% larger, more diverse synthetic pool
+  produced a small regression, not an improvement) - closing it for real
+  would need a different kind of fix than more data or more categories.
 - **Clusters 11 and 14 remain a real, ~19-20dB weak subgroup** relative to
   the ~22-26dB band the rest of the data sits in - partially explained
   (noise-parameter regime + texture density), not fully resolved, and

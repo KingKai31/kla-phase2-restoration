@@ -72,6 +72,15 @@ wrong-cwd combined check, real timing).
    hypothesized to close the synthetic generator's high-frequency spectral
    deficit; measured, made it worse for a real mechanistic reason, and was
    dropped per its own gate rather than pushed through.
+10. **A post-ship technical hardening pass, 5 axes, all pre-registered**
+    (`reports/TECHNICAL_HARDENING_PASS_SUMMARY.md`): re-tested the
+    schedule fix, more/different real external data, a bottleneck
+    self-attention block, a 4-config hyperparameter sweep, real external
+    validation (Ni-WC metal-matrix composite, CC-BY-4.0), a beyond-
+    training-range noise-severity stress test, and real-mask structural-
+    edge preservation. Every comparison either confirmed Stage A was
+    already well-chosen or surfaced a real, disclosed limitation that a
+    cheap fix didn't resolve - **the shipped model is unchanged.**
 
 **Phase 1's fitted noise-model numbers do NOT apply to this dataset** and
 are not carried over anywhere in this repo - every number here is
