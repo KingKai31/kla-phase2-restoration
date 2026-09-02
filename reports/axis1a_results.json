@@ -1,0 +1,17 @@
+{
+  "n_train_real": 4073,
+  "n_train_synthetic": 12204,
+  "n_val": 712,
+  "init_checkpoint": "checkpoints/stage_a_v2_best.pt",
+  "init_val_psnr": 23.50912811169257,
+  "epochs_run": 41,
+  "best_epoch": 15,
+  "best_val_psnr": 23.47597247503394,
+  "best_val_ssim": 0.5975238717977368,
+  "best_val_lpips": 0.18291708103935705,
+  "best_composite": 0.659890540809103,
+  "psnr_gain_over_init": -0.033155636658626975,
+  "total_wall_clock_sec": 2204.0801496505737,
+  "gpu_name": "NVIDIA A100-SXM4-80GB",
+  "checkpoint": "/workspace/kla-restoration-phase2/checkpoints/axis1a_best.pt"
+}
