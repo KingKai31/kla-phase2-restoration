@@ -1,0 +1,42 @@
+{
+  "intensity_anomaly": {
+    "n": 100,
+    "mean_survival_without_roi": 0.23762595555745064,
+    "mean_survival_with_roi": 0.23804794043302535,
+    "mean_delta_with_minus_without": 0.000421984875574708,
+    "relative_delta_pct": 0.17758366277150436,
+    "wilcoxon_p_value": 0.06238182359673901,
+    "statistically_significant (p<0.05)": false,
+    "roi_improves_survival_AND_significant": false
+  },
+  "line_discontinuity": {
+    "n": 100,
+    "mean_survival_without_roi": 0.0886713920533657,
+    "mean_survival_with_roi": 0.08906461417675018,
+    "mean_delta_with_minus_without": 0.0003932221233844757,
+    "relative_delta_pct": 0.44345996411990485,
+    "wilcoxon_p_value": 0.18444471851330213,
+    "statistically_significant (p<0.05)": false,
+    "roi_improves_survival_AND_significant": false
+  },
+  "particle": {
+    "n": 100,
+    "mean_survival_without_roi": 0.19643534770235418,
+    "mean_survival_with_roi": 0.19666066809091717,
+    "mean_delta_with_minus_without": 0.0002253203885629773,
+    "relative_delta_pct": 0.11470460444033258,
+    "wilcoxon_p_value": 0.10170516363941541,
+    "statistically_significant (p<0.05)": false,
+    "roi_improves_survival_AND_significant": false
+  },
+  "NONE_hallucination_check": {
+    "n": 100,
+    "mean_survival_without_roi": 0.053392072739079595,
+    "mean_survival_with_roi": 0.053805885389447215,
+    "mean_delta_with_minus_without": 0.0004138126503676176,
+    "relative_delta_pct": 0.7750451127639649,
+    "wilcoxon_p_value": 0.038787590867568576,
+    "statistically_significant (p<0.05)": true,
+    "roi_improves_survival_AND_significant": true
+  }
+}

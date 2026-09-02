@@ -32,6 +32,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
+from scipy import stats as spstats
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.models.nafnet import NAFNetSR  # noqa: E402
@@ -144,11 +145,22 @@ def main():
             rows.append({"file": fname, "perturbation": pert_name,
                          "survival_without_roi": surv_without, "survival_with_roi": surv_with})
 
-        # false-hallucination check: random unperturbed location, same-size bbox, on the CLEAN pair
+        # False-hallucination check, fixed: comparing an array to itself (the
+        # original version) always gives exactly 0 - not a real test. Instead,
+        # restore a SECOND, independently-noised degradation of the SAME clean
+        # GT (no perturbation either time) and compare the two restorations at
+        # a random location. The true underlying signal is identical in both -
+        # any large discrepancy here means the model is reacting to noise-
+        # realization differences rather than robustly recovering real
+        # structure, i.e. a genuine hallucination-risk signature.
+        clean_noisy_2 = degrader.degrade(gt.astype(np.float32))
+        clean_restored_without_2 = restore(model_without, clean_noisy_2)
+        clean_restored_with_2 = restore(model_with, clean_noisy_2)
+
         rand_y, rand_x = rng.integers(40, 216), rng.integers(40, 216)
         rand_bbox = (rand_y - 6, rand_y + 6, rand_x - 6, rand_x + 6)
-        halluc_without = survival_score(clean_restored_without, clean_restored_without, rand_bbox)
-        halluc_with = survival_score(clean_restored_with, clean_restored_with, rand_bbox)
+        halluc_without = survival_score(clean_restored_without, clean_restored_without_2, rand_bbox)
+        halluc_with = survival_score(clean_restored_with, clean_restored_with_2, rand_bbox)
         rows.append({"file": fname, "perturbation": "NONE_hallucination_check",
                      "survival_without_roi": halluc_without, "survival_with_roi": halluc_with})
 
@@ -159,11 +171,26 @@ def main():
     summary = {}
     for pert in df["perturbation"].unique():
         sub = df[df["perturbation"] == pert]
+        delta = sub["survival_with_roi"] - sub["survival_without_roi"]
+        # Paired test (same images, same perturbation, only the model differs) -
+        # "the mean is higher" alone doesn't tell us whether a delta this small
+        # is real signal or noise. Wilcoxon signed-rank, not a t-test - no
+        # reason to assume the per-image delta distribution is normal here.
+        if delta.std() > 0:
+            wilcoxon_stat, wilcoxon_p = spstats.wilcoxon(sub["survival_with_roi"], sub["survival_without_roi"])
+        else:
+            wilcoxon_p = 1.0  # all deltas identical (e.g. the hallucination check's exact-zero case)
+        mean_without = sub["survival_without_roi"].mean()
+        mean_with = sub["survival_with_roi"].mean()
         summary[pert] = {
             "n": len(sub),
-            "mean_survival_without_roi": float(sub["survival_without_roi"].mean()),
-            "mean_survival_with_roi": float(sub["survival_with_roi"].mean()),
-            "roi_improves_survival": bool(sub["survival_with_roi"].mean() > sub["survival_without_roi"].mean()),
+            "mean_survival_without_roi": float(mean_without),
+            "mean_survival_with_roi": float(mean_with),
+            "mean_delta_with_minus_without": float(delta.mean()),
+            "relative_delta_pct": float(delta.mean() / mean_without * 100) if mean_without > 0 else None,
+            "wilcoxon_p_value": float(wilcoxon_p),
+            "statistically_significant (p<0.05)": bool(wilcoxon_p < 0.05),
+            "roi_improves_survival_AND_significant": bool(mean_with > mean_without and wilcoxon_p < 0.05),
         }
     print(json.dumps(summary, indent=2))
     with open(args.out_dir / "defect_preservation_summary.json", "w") as f:
