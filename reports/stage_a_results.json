@@ -1,0 +1,27 @@
+{
+  "n_train": 4073,
+  "n_val": 712,
+  "epochs_run": 39,
+  "epochs_budgeted": 150,
+  "best_epoch": 13,
+  "best_val_psnr": 23.483065963141588,
+  "best_val_ssim": 0.5975757922307565,
+  "overall_val_psnr_recheck": 23.483065963141588,
+  "overall_val_ssim_recheck": 0.5975757922307565,
+  "n_clusters_in_val": 20,
+  "worst_cluster_psnr": {
+    "cluster": 9,
+    "mean_psnr": 13.278065984076378,
+    "n": 2
+  },
+  "best_cluster_psnr": {
+    "cluster": 15,
+    "mean_psnr": 28.42383235662256,
+    "n": 19
+  },
+  "total_wall_clock_sec": 581.616327047348,
+  "mean_epoch_time_sec": 14.903062906020727,
+  "device": "cuda",
+  "gpu_name": "NVIDIA A100-SXM4-80GB",
+  "checkpoint": "checkpoints/stage_a_best.pt"
+}
