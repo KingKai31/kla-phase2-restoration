@@ -1,0 +1,27 @@
+{
+  "n_independent_source_crops": 45,
+  "n_tiles": 180,
+  "note": "n_tiles=180 comes from 4 non-overlapping 256x256 tiles per each of the 45 independent source crops - NOT 180 independent images",
+  "reconstruction_quality": {
+    "model": {
+      "psnr": 17.730360595114178,
+      "ssim": 0.3260568425154273,
+      "lpips": 0.414983993768692
+    },
+    "classical": {
+      "psnr": 16.59125699167979,
+      "ssim": 0.379226182750297,
+      "lpips": 0.6422347790665097
+    }
+  },
+  "edge_preservation_at_real_annotated_boundaries": {
+    "model": {
+      "mean_edge_ratio": 0.6867225248853434,
+      "mean_edge_corr": 0.6307794406948304
+    },
+    "classical": {
+      "mean_edge_ratio": 0.8810765462278638,
+      "mean_edge_corr": 0.5807983898091369
+    }
+  }
+}
