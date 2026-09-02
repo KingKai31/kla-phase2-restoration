@@ -6,16 +6,25 @@ noise indistinguishable from defect edges": apply stronger fidelity
 preservation specifically in high-local-structure regions, since a
 uniform loss can't distinguish real fine structure from noise by itself.
 
-NOT assumed to help - see scripts/roi_loss_ablation.py for the pre-
-registered controlled comparison (decision rule fixed BEFORE running it)
-and scripts/defect_preservation_stress_test.py for the actual defect-
-survival evidence this term is meant to justify.
+STATUS: DROPPED - NOT part of the active Stage B loss stack. Tested with
+a pre-registered decision rule (reports/roi_loss_decision_rule_PREREGISTERED.md,
+written before any comparison was run) and FAILED condition 2: on the
+defect-preservation stress test (scripts/defect_preservation_stress_test.py,
+paired Wilcoxon test, n=100 per perturbation type), none of three real
+perturbation types showed a statistically significant survival
+improvement (p=0.062/0.184/0.102), and a bug-fixed hallucination check
+showed a significant (p=0.039) increase in noise-sensitivity at random
+unperturbed locations with this term active - the exact risk named below,
+now measured, not just hypothesized. Full writeup:
+reports/roi_loss_FINAL_DECISION.md. Kept in the repo as tested, documented
+code and a real negative result, not deleted - Stage B uses the plain
+5-term StageBCompositeLoss instead.
 
-Real, disclosed risk: local variance is elevated by BOTH real fine
-structure AND noise - the naive version below (a hard top-k% variance
-mask) cannot fully distinguish them, so this term could amplify noise in
-high-variance-but-actually-noisy regions rather than protecting real
-structure. Watched for directly in the ablation, not assumed away.
+Real, disclosed risk (borne out by the finding above, not just a
+hypothesis): local variance is elevated by BOTH real fine structure AND
+noise - the naive version below (a hard top-k% variance mask) cannot
+fully distinguish them, so this term amplified noise-sensitivity rather
+than protecting real structure.
 """
 import torch
 import torch.nn as nn

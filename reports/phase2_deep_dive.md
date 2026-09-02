@@ -399,6 +399,50 @@ the first place to look.
 
 ---
 
+## Part 7 — External-label validation of Part 1's clusters, and a confidence signal (RunPod phase)
+
+Once 3 of 10 real NFFA-EUROPE categories (Biological, Fibres,
+Films_Coated_Surface - 1,421 real-labeled images) were downloaded and
+verified, two of Part 1's open questions got real answers instead of
+caveats.
+
+**Cluster-alignment validation against real labels
+(`scripts/validate_cluster_alignment.py`, results in
+`reports/cluster_alignment_summary.json` /
+`reports/cluster_alignment_crosstab.csv`):** each real-labeled external
+image was assigned to its nearest Part-1 cluster centroid in the same
+feature space (after resizing the native-resolution NFFA images to 256x256
+first, to avoid a scale confound in the FFT/orientation/thumbnail
+features - a methodological check caught before running, not after).
+Result: Biological images concentrate 27.8% in one cluster and 63.7% in
+their top 3 (18/20 clusters touched); Fibres 18.7% top-1 / 51.3% top-3
+(16/20 clusters); Films_Coated_Surface 23.0% top-1 / 59.2% top-3 (15/20
+clusters) - all three categories clear the 31.0% uninformative baseline
+(the size-share of the 3 largest clusters) on the top-3 metric, and none
+collapse into a single dominant cluster.
+
+**Precise framing (use exactly this, everywhere the clusters are
+referenced from here on): the clusters are a real but moderate signal,
+useful for stratified validation coverage (Part 1's actual original
+purpose - catching a hidden weak subgroup), not a category proxy.** They
+correlate with real category identity above chance, but not tightly
+enough to stand in for ground-truth labels. This supersedes Part 1's
+softer "unsupervised proxy groups, not verified category names" caveat
+with a measured number now that real labels exist to check against.
+
+**Local-Lipschitz confidence signal
+(`scripts/validate_confidence_signal.py`, results in
+`reports/confidence_signal_validation_summary.json`, full method and
+scoping in `src/utils/confidence.py`):** validated on n=716 real val
+images against a real trained checkpoint. It is a real signal for
+PSNR-type reconstruction error (Pearson r=-0.614, Spearman r=-0.622,
+p<1e-75), but not shown to work for SSIM-type error (Pearson r=+0.192,
+Spearman r=+0.177 - weak and wrong-signed). **Never state this as a
+general confidence/uncertainty measure without that split** - it predicts
+pixel-fidelity error, not structural-similarity error.
+
+---
+
 ## Implication for the next phase
 
 **Recommendation, not a unilateral architecture decision:** the compound
