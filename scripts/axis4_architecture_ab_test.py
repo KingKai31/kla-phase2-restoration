@@ -129,15 +129,34 @@ def main():
     ap.add_argument("--epochs", type=int, default=15)
     args = ap.parse_args()
 
+    # Save each config's result to its own file the moment it finishes -
+    # a real lesson from this pass: an earlier run held both configs'
+    # results only in memory and lost a fully-completed baseline result
+    # when the process died silently before the attention config finished.
     results = []
-    print("=== Baseline (NAFNetSR) ===")
-    r_baseline = run_config("baseline_nafnet", NAFNetSR(img_channel=1, width=32, upscale=2),
-                             args.gt_dir, args.noisy_dir, args.split_csv, epochs=args.epochs)
+    baseline_path = args.reports_dir / "axis4_result_baseline.json"
+    attn_path = args.reports_dir / "axis4_result_attention.json"
+
+    if baseline_path.exists():
+        print("=== Baseline result already on disk, skipping re-run ===")
+        r_baseline = json.load(open(baseline_path))
+    else:
+        print("=== Baseline (NAFNetSR) ===")
+        r_baseline = run_config("baseline_nafnet", NAFNetSR(img_channel=1, width=32, upscale=2),
+                                 args.gt_dir, args.noisy_dir, args.split_csv, epochs=args.epochs)
+        args.reports_dir.mkdir(parents=True, exist_ok=True)
+        json.dump(r_baseline, open(baseline_path, "w"), indent=2)
     results.append(r_baseline)
 
-    print("=== Attention variant (NAFNetSRWithAttention) ===")
-    r_attn = run_config("bottleneck_attention", NAFNetSRWithAttention(img_channel=1, width=32, upscale=2),
-                         args.gt_dir, args.noisy_dir, args.split_csv, epochs=args.epochs)
+    if attn_path.exists():
+        print("=== Attention result already on disk, skipping re-run ===")
+        r_attn = json.load(open(attn_path))
+    else:
+        print("=== Attention variant (NAFNetSRWithAttention) ===")
+        r_attn = run_config("bottleneck_attention", NAFNetSRWithAttention(img_channel=1, width=32, upscale=2),
+                             args.gt_dir, args.noisy_dir, args.split_csv, epochs=args.epochs)
+        args.reports_dir.mkdir(parents=True, exist_ok=True)
+        json.dump(r_attn, open(attn_path, "w"), indent=2)
     results.append(r_attn)
 
     composite_gain = r_attn["composite"] - r_baseline["composite"]

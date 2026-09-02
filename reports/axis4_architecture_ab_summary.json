@@ -1,0 +1,31 @@
+{
+  "results": [
+    {
+      "config": "baseline_nafnet",
+      "epochs_run": 15,
+      "wall_clock_sec": 239.92424249649048,
+      "n_params": 6816324,
+      "epoch": 14,
+      "psnr": 23.475558591589394,
+      "ssim": 0.5958481162459299,
+      "lpips": 0.18513053633649362,
+      "composite": 0.6585849397829098
+    },
+    {
+      "config": "bottleneck_attention",
+      "epochs_run": 15,
+      "wall_clock_sec": 245.46588897705078,
+      "n_params": 7867973,
+      "epoch": 14,
+      "psnr": 23.509578946151517,
+      "ssim": 0.6008173505522244,
+      "lpips": 0.18449989300786276,
+      "composite": 0.6612075735403765
+    }
+  ],
+  "composite_gain_attention_over_baseline": 0.0026226337574667413,
+  "psnr_delta": 0.0340203545621236,
+  "ssim_delta": 0.004969234306294479,
+  "passes_preregistered_adoption_gate": false,
+  "decision": "DROP attention variant - document as negative result"
+}
