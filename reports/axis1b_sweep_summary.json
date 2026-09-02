@@ -1,0 +1,69 @@
+{
+  "results": [
+    {
+      "config": "baseline",
+      "params": {
+        "lr": 0.0002,
+        "batch_size": 16,
+        "sobel_weight": 0.1
+      },
+      "best_epoch": 14,
+      "epochs_run": 30,
+      "wall_clock_sec": 484.473757982254,
+      "psnr": 23.495783018862824,
+      "ssim": 0.5994108145075272,
+      "lpips": 0.18586217649176381,
+      "composite": 0.6599780575355394
+    },
+    {
+      "config": "higher_lr",
+      "params": {
+        "lr": 0.0004,
+        "batch_size": 16,
+        "sobel_weight": 0.1
+      },
+      "best_epoch": 8,
+      "epochs_run": 24,
+      "wall_clock_sec": 398.74909138679504,
+      "psnr": 23.502771719956296,
+      "ssim": 0.6013461791832639,
+      "lpips": 0.1810340845559755,
+      "composite": 0.6623878475414582
+    },
+    {
+      "config": "larger_batch",
+      "params": {
+        "lr": 0.0002,
+        "batch_size": 32,
+        "sobel_weight": 0.1
+      },
+      "best_epoch": 20,
+      "epochs_run": 36,
+      "wall_clock_sec": 507.89878129959106,
+      "psnr": 23.411331763904027,
+      "ssim": 0.5954843326504354,
+      "lpips": 0.18778190007851867,
+      "composite": 0.6561526278329506
+    },
+    {
+      "config": "stronger_sobel",
+      "params": {
+        "lr": 0.0002,
+        "batch_size": 16,
+        "sobel_weight": 0.2
+      },
+      "best_epoch": 15,
+      "epochs_run": 31,
+      "wall_clock_sec": 527.38445520401,
+      "psnr": 23.459259934615464,
+      "ssim": 0.6012607556625064,
+      "lpips": 0.18487132462055494,
+      "composite": 0.660113364449883
+    }
+  ],
+  "winner": "higher_lr",
+  "winner_composite": 0.6623878475414582,
+  "baseline_composite": 0.6599780575355394,
+  "composite_gain_over_baseline": 0.0024097900059187882,
+  "passes_preregistered_adoption_gate": false
+}
