@@ -4,106 +4,91 @@ New repo per judges' preference for a fresh repo per phase (not extending
 Phase 1's [kla-ps01-restoration](https://github.com/KingKai31/kla-ps01-restoration)).
 Same task type (restore degraded images: multiplicative + additive noise +
 spatial downsampling), completely new dataset: real SEM (scanning electron
-microscope) images derived from **NFFA-EUROPE** (CC-BY 4.0), 10 documented
-categories, 4,785 GT/NoisyLR pairs.
+microscope) images derived from **NFFA-EUROPE** (CC-BY 4.0), 4,785
+GT/NoisyLR pairs, 20 unsupervised-clustering proxy groups (no category
+labels ship with the delivery).
 
-## Status
+## Status: submission-ready
 
-**Data understanding, noise-model characterization, and a validated
-synthetic generator are complete. No restoration model has been trained
-and no architecture decisions have been made yet** - see
-[reports/phase2_data_inventory.md](reports/phase2_data_inventory.md) (raw
-inventory) and [reports/phase2_deep_dive.md](reports/phase2_deep_dive.md)
-(clustering proxy, scale-bar investigation, noise-model comparison,
-parameter characterization, synthetic generator, insurance check) for the
-full findings - real evidence, real figures, real numbers on the full
-4,785-pair dataset, not assumptions carried over from Phase 1.
+**Shipped model: `checkpoints/stage_a_best.pt` (`models/checkpoint.pt` in
+the submission), trained on the real 4,785 pairs only.** Val PSNR=23.483dB,
+val SSIM=0.5976 (712-image leakage-checked val split). Full verification,
+the complete honest three-stage story (Stage A ships; a synthetic-data
+Stage B fine-tune was tried and gave a genuine null result; one targeted
+fix attempt failed its own pre-registered gate), and every disclosed
+limitation: **[reports/FINAL_SUBMISSION_VERIFICATION.md](reports/FINAL_SUBMISSION_VERIFICATION.md)**
+- start there.
 
-**Noise model finalized, synthetic generator built and validated**
-(`src/datasets/synthetic_degrade.py`, `CompoundNoiseDegrader`). Insurance
-check against 200 real held-out pairs: bulk statistics (mean, std) match
-strongly (KS tests find no significant difference), visual samples across
-6 diverse specimen types are convincing. Two real, disclosed gaps: a
-heavier real-data tail in extreme max values than the Gaussian
-approximation produces (KS p=0.001), and a ~22% high-frequency spectral
-deficit at the highest spatial frequencies checked - both flagged
-explicitly, of similar kind/magnitude to gaps Phase 1 itself judged
-low-impact and proceeded past. Cluster 18's noise-fit anomaly was checked
-(bounded, time-boxed investigation) and plausibly explained by its
-unusually dark/low-brightness image content destabilizing its own
-per-cluster fit - not fully certain, documented as a known limitation.
+Run inference with:
+```
+python run.py <input_dir> <output_dir>
+```
+`run.py` is fully self-contained (model architecture inlined, no `src/`
+dependency) - see `reports/run_py_compliance_checklist.md` for the full
+verification chain (adversarial pytest suite, fresh-venv + no-internet +
+wrong-cwd combined check, real timing).
 
-Headline findings:
-- Structurally very similar to Phase 1's data convention (GT/NoisyLR
-  folders, `.npy` format, 256↔128 only, GT strictly `[0,1]`, NoisyLR
-  overshoots both directions, negative pixels present).
-- **No category labels ship with this data delivery.** Decision: don't
-  block on a corrected download - built an unsupervised-clustering proxy
-  instead (20 clusters, real imbalance found: 12 to 526 images per
-  cluster, 43.8x ratio). These are proxy groups, not verified NFFA
-  category names. **Train/val split built STRATIFIED per cluster** (not
-  Phase 1's whole-cluster assignment) so every cluster - even the n=12
-  one - has guaranteed representation in both splits: 4,069 train / 716
-  val, verified programmatically.
-- **Scale-bar/info-panel overlays quantified: 10/4,785 (0.21%).** Excluded
-  from all training/fitting going forward (permanent, re-derivable list:
-  `reports/scale_bar_excluded_files.txt`). Checked whether they
-  contaminate the noise-model fit: no - the apparent 2.5x higher noise in
-  bar regions is fully explained by their higher average brightness once
-  normalized the multiplicative way (ratio drops to 1.003x); masking
-  wasn't structurally necessary for the fit, but the files are excluded
-  anyway since they contain non-specimen content.
-- **Noise model: the compound model is ADOPTED as the real Phase 2 noise
-  model, replacing Phase 1's pure-Gamma.** Tested rigorously on all 4,775
-  non-bar pairs: compound (quadratic multiplicative + linear Poisson-like
-  term) fits dramatically better (R²=0.9997) than pure Gamma (R²=0.9926,
-  Phase 1's model) or pure Poisson (R²=0.9719) alone - physically
-  consistent with real SEM detector physics (Poisson electron counting
-  plus multiplicative detector gain). **Fully characterized via 200
-  bootstrap fits**: L_gain (multiplicative) mean 39.3, range 29.7-50.6;
-  K_poisson (shot-noise) mean 104.4, range 76.9-214.2; σ_A (additive
-  floor) small, often near-zero. Real per-cluster variation found beyond
-  bootstrap noise (L_gain 29-80, K_poisson 46-364 across clusters) - the
-  Phase 2 analogue of Phase 1's "randomize L across its full range"
-  finding. A secondary S-shaped residual-bias finding was investigated,
-  not left loose: not explained by a simple linear effect, but a cubic
-  empirical correction captures 99.4% of it, documented as a known minor
-  approximation (same pattern as Phase 1's own unexplained
-  brightness-overprediction).
+## Key findings, in the order they were built
 
-**Phase 1's fitted noise-model numbers (Gamma L range, additive σ, etc.) do
-NOT apply to this dataset** and are not carried over anywhere in this repo.
+1. **Data understanding** (`reports/phase2_data_inventory.md`): raw
+   inventory, pairing check, scale-bar/info-panel overlays quantified at
+   0.21% and excluded.
+2. **Deep dive** (`reports/phase2_deep_dive.md`, Parts 1-8): unsupervised
+   clustering as an honestly-scoped validation-coverage proxy (not a
+   category proxy - later validated against real NFFA labels as "real but
+   moderate," Part 7); a compound noise model
+   (`Var = a·x² + c·x + e`, Gamma-multiplicative + Poisson-shot + read-noise
+   floor) adopted over pure-Gamma/pure-Poisson (R²=0.9997 vs 0.9926/0.9719),
+   fully characterized via bootstrap, physically grounded in real SEM
+   detector physics; a synthetic generator built and insurance-checked
+   with two disclosed statistical gaps; a bounded investigation of two
+   weak clusters (11, 14) with a real, partial explanation (Part 8).
+3. **RunPod migration**: A100-SXM4-80GB, environment verified, real timing
+   established before any training.
+4. **External data (Tier 1)**: 4 of 10 real-labeled NFFA-EUROPE categories
+   downloaded and verified (Biological, Fibres, Films_Coated_Surface,
+   MEMS_devices_and_electrodes) via B2SHARE (CC-BY-4.0, verified directly -
+   a HuggingFace mirror was checked and found to genuinely differ in count
+   and license, not used). Zero source-overlap with our own training data
+   (perceptual-hash checked). Remaining 6 categories were left downloading
+   at low priority, not blocking any deliverable.
+5. **A 6th loss term (ROI-preservation), built and honestly dropped**:
+   pre-registered a keep/drop rule before any comparison, found and fixed
+   a self-comparison bug in the evaluation script, got a real negative
+   result, dropped it per the rule - documented as a rigor case study in
+   `reports/CASE_STUDY_rigor_in_practice.md`.
+6. **A confidence signal, kept with a precisely scoped claim**:
+   Local-Lipschitz sensitivity probing validated as real for PSNR-type
+   error (r=-0.614, survives Benjamini-Hochberg correction) but not for
+   SSIM-type error - never cited without that split.
+7. **Stage A** (`reports/STAGE_A_RESULTS.md`): real training run on the
+   leakage-checked stratified split, per-cluster reporting, 23.483dB/0.598
+   SSIM.
+8. **Stage B, a genuine null result** (`reports/STAGE_B_RESULTS.md`):
+   fine-tuning with 8,526 synthetic pairs (Task C) added no measurable
+   improvement, uniformly flat across all 20 clusters.
+9. **One targeted, pre-registered fix attempt, correctly abandoned**
+   (`reports/SPECTRAL_FIX_ATTEMPT.md`): spatial noise correlation was
+   hypothesized to close the synthetic generator's high-frequency spectral
+   deficit; measured, made it worse for a real mechanistic reason, and was
+   dropped per its own gate rather than pushed through.
 
-## What's ported from Phase 1 vs. what's new
-
-Ported (domain-independent infrastructure - evaluation, statistics,
-compliance patterns, none of it depends on Phase 1's specific fitted
-numbers or trained weights):
-
-| File | What it is |
-|---|---|
-| `run.py.template` | Phase 1's `run.py` verbatim - the guardrail patterns (`sanitize_output()`, `classical_fallback()`, per-image exception handling, cwd-independent checkpoint resolution) are reusable; the model class/checkpoint loading inside it is Phase-1-specific and needs rewriting once a Phase 2 model exists. Renamed `.template` so it's never mistaken for a runnable script. |
-| `tests/test_run_py_robustness.py.template` | Phase 1's 25-test robustness suite - the test *cases* (corrupt files, wrong shape, NaN/Inf, tiny images, etc.) are domain-independent; it imports Phase 1's `run.py` and needs repointing once Phase 2's `run.py` exists. |
-| `scripts/generate_ppt_report.py.template` | The statistical-significance (paired Wilcoxon + bootstrap CI), composite-score-sensitivity, and classical-baseline-comparison *functions* are generic PSNR/SSIM/LPIPS math - the narrative text in each is written for Phase 1's specific findings and needs a full rewrite, not a numbers swap. |
-| `scripts/compute_per_image_metrics.py`, `classical_baseline_eval.py`, `performance_profile.py`, `gt_noise_ceiling_check.py`, `ensemble_check.py`, `quick_test_visualize.py` | Reusable as-is in structure; each imports Phase 1's `src.models.nafnet`/`src.datasets.kla_dataset`, which don't exist yet here - won't run until Phase 2's model/dataset code is built. |
-| `src/utils/reproducibility.py` | Fully domain-independent (`set_full_determinism`, `seed_worker`, `make_seeded_generator`) - usable as-is once training starts. |
-| `.gitignore` | Same patterns (data/checkpoints/outputs excluded, figures NOT blanket-ignored per the documented Phase 1 incident). |
-
-**Not ported, by explicit instruction:** Phase 1's fitted noise-model
-numbers, trained checkpoints, or `src/models/nafnet.py` (architecture
-decisions are out of scope for this data-understanding pass).
-
-## Data
-
-See [data/README.md](data/README.md) for the real local path and layout.
-Not committed (gitignored, same pattern as Phase 1).
+**Phase 1's fitted noise-model numbers do NOT apply to this dataset** and
+are not carried over anywhere in this repo - every number here is
+re-derived from this phase's own data.
 
 ## Repo layout
 
 ```
-reports/                    phase2_data_inventory.md (start here), figures, JSON summaries
-scripts/phase2_data_inventory.py   the script behind every number in the inventory doc
-scripts/*.template, run.py.template, tests/*.template   ported Phase 1 infrastructure, needs adaptation
-src/utils/reproducibility.py       ported as-is, domain-independent
-data/                        not committed - see data/README.md
+run.py                       self-contained inference script (ships models/checkpoint.pt)
+tests/                        adversarial pytest robustness suite (25 tests)
+submission_requirements.txt   minimal, exact-pinned deps for run.py only
+requirements.txt              full training-environment dependencies
+reports/                      every finding, in the order above - FINAL_SUBMISSION_VERIFICATION.md is the entry point
+scripts/                      every analysis/training script behind the reports
+src/models/nafnet.py          NAFNetSR architecture (also inlined in run.py for self-containment)
+src/losses/                   Stage A/B loss stack (roi_preservation.py is dropped, kept as documented history)
+src/datasets/synthetic_degrade.py   CompoundNoiseDegrader, the validated synthetic generator
+src/utils/                     reproducibility helpers, the confidence signal
+data/                          not committed - see data/README.md for the real local layout
 ```

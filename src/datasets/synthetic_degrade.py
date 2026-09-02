@@ -46,6 +46,22 @@ import numpy as np
 import pandas as pd
 
 
+def to_unit_grayscale(arr: np.ndarray) -> np.ndarray:
+    """Converts an arbitrary image array (RGB or grayscale, uint8 or float,
+    any value range) to float32 grayscale normalized to [0,1] - the same
+    RGB-averaging and /255 convention already used in degrade_external()
+    below, factored out here so scripts/quick_test_visualize.py can accept
+    arbitrary external images/arrays, not just this project's own
+    pre-normalized .npy format."""
+    arr = np.asarray(arr)
+    if arr.ndim == 3:
+        arr = arr[..., :3].mean(axis=-1)
+    arr = arr.astype(np.float64)
+    if arr.max() > 1.5:
+        arr = arr / 255.0
+    return np.clip(arr, 0.0, 1.0).astype(np.float32)
+
+
 def box_downsample(arr: np.ndarray, factor: int) -> np.ndarray:
     if factor == 1:
         return arr
