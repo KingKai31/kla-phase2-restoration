@@ -443,6 +443,57 @@ pixel-fidelity error, not structural-similarity error.
 
 ---
 
+## Part 8 — Stage A weak-cluster check: clusters 11 and 14 (bounded, Task 6 follow-up)
+
+Stage A's per-cluster val report (`reports/STAGE_A_RESULTS.md`) flagged
+two reasonably-sized clusters (11: n=41, PSNR=19.67dB; 14: n=46,
+PSNR=19.20dB) as genuinely below the ~22-26dB band the other clusters sit
+in. Same bounded-check discipline as the Part 4 cluster-18 investigation:
+~20 minutes, two checks, report the finding either way.
+
+**Noise-parameter check:** clusters 11 and 14 sit in the same
+high-L_gain/low-K_poisson regime as cluster 18's fitted anomaly (11:
+L_gain=65.0, K_poisson=48.6; 14: L_gain=79.9, K_poisson=45.9; 18:
+L_gain=239.4, K_poisson=31.1 - vs. a typical cluster like 8: L_gain=29.3,
+K_poisson=364.4). Across all 18 clusters with a valid fit, K_poisson
+correlates significantly with Stage A PSNR (Pearson r=0.688, p=0.0016) -
+lower K_poisson means more shot-noise variance in absolute terms, a
+genuinely harder degradation to invert, not a sign the model failed to
+generalize to a hidden subgroup.
+
+**Brightness check (repeating Part 4's method): does NOT transfer.**
+Cluster 18's low-PSNR fit correlated with unusually dark images (median
+brightness 0.217). Clusters 11 (0.377) and 14 (0.502) are NOT dark -
+14 is brighter than the population average, and cluster 15 (the single
+*best*-performing cluster at 28.4dB) is the darkest of all six clusters
+checked (0.151). Brightness is not the mechanism here; it was specific to
+cluster 18, not a general "dark images destabilize the fit" rule.
+
+**Visual check (`reports/figures/cluster11_14_sample_grid.png`, 5 samples
+each vs. cluster 8 as a healthy comparison): a real, visible content
+difference.** Clusters 11 and 14 are dominated by dense, fine-grained
+high-frequency texture - small pores, granules, and cellular structures
+packed across the whole frame. The healthy comparison cluster is visibly
+lower-frequency - softer blob structures, larger fibers, more open,
+lower-detail regions. Fine high-frequency content is intrinsically harder
+to recover after 2x downsampling and noise (it's the first content lost to
+both), independent of the noise model itself.
+
+**Finding: a real, plausible, partially-explained cause - not fully
+certain, same standard as cluster 18.** The combination of (a) a real
+population-level K_poisson/PSNR relationship and (b) visibly denser
+high-frequency texture content in these two specific clusters is a
+consistent, physically sensible story: harder-to-restore content, not a
+model generalization failure. Not proven to be the complete explanation
+(the L_gain/K_poisson fit-to-texture link itself is observational, not
+derived), and flagged as the concrete thing to watch in Stage B: if
+Task C's synthetic data happens to include comparable fine-texture
+content, clusters 11/14 should improve; if they stay flat despite more
+data, that would point toward an architectural limit on high-frequency
+recovery rather than a data-coverage gap.
+
+---
+
 ## Implication for the next phase
 
 **Recommendation, not a unilateral architecture decision:** the compound
