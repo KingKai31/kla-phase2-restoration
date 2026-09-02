@@ -29,13 +29,19 @@ buggy version of this script (which additionally had a broken
 hallucination check - comparing an array to itself, always exactly 0,
 fixed before this final run) were not real signal.
 
-**Hallucination check (fixed): statistically significant, wrong
-direction.** Comparing two independently-noised restorations of the same
-clean image (no perturbation, either time) at a random location:
-`with_roi` shows a **higher** discrepancy (0.0538 vs 0.0534, p=0.039) -
-small in absolute terms, but real, and in exactly the direction the
-term's own docstring flagged as a risk (amplifying sensitivity to noise
-rather than protecting real structure).
+**Hallucination check (fixed): nominally significant uncorrected, wrong
+direction - does not survive multiple-comparisons correction.**
+Comparing two independently-noised restorations of the same clean image
+(no perturbation, either time) at a random location: `with_roi` shows a
+**higher** discrepancy (0.0538 vs 0.0534, raw p=0.039) - in exactly the
+direction the term's own docstring flagged as a risk (amplifying
+sensitivity to noise rather than protecting real structure). Applying
+Benjamini-Hochberg correction across this decision's 4-test family
+(`reports/MULTIPLE_COMPARISONS_CORRECTION.md`) raises this to an adjusted
+p=0.125 - **not significant after correction.** This doesn't change the
+decision below (which turns on the benefit tests failing, not this one),
+but the honest reading is a uniformly null result across all 4 tests, not
+"no benefit but a real, if small, harm."
 
 ## Decision: DROP the ROI-preservation term
 

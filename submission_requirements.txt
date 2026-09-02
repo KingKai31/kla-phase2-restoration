@@ -1,0 +1,9 @@
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.4.1+cu124
+torchvision==0.19.1+cu124
+torchaudio==2.4.1+cu124
+numpy==2.4.6
+scipy==1.17.1
+pillow==10.2.0
+scikit-image==0.26.0
+PyWavelets==1.9.0

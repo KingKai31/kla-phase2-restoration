@@ -12,10 +12,13 @@ written before any comparison was run) and FAILED condition 2: on the
 defect-preservation stress test (scripts/defect_preservation_stress_test.py,
 paired Wilcoxon test, n=100 per perturbation type), none of three real
 perturbation types showed a statistically significant survival
-improvement (p=0.062/0.184/0.102), and a bug-fixed hallucination check
-showed a significant (p=0.039) increase in noise-sensitivity at random
-unperturbed locations with this term active - the exact risk named below,
-now measured, not just hypothesized. Full writeup:
+improvement (raw p=0.062/0.184/0.102), and a bug-fixed hallucination
+check showed a nominally significant (raw p=0.039) increase in
+noise-sensitivity at random unperturbed locations with this term active -
+after Benjamini-Hochberg correction across this 4-test family
+(reports/MULTIPLE_COMPARISONS_CORRECTION.md), none of the 4 tests remain
+significant (adjusted p=0.125/0.184/0.136/0.125) - a uniformly null
+result, not "no benefit but real harm." Full writeup:
 reports/roi_loss_FINAL_DECISION.md. Kept in the repo as tested, documented
 code and a real negative result, not deleted - Stage B uses the plain
 5-term StageBCompositeLoss instead.

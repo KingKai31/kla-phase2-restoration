@@ -7,7 +7,9 @@
     "relative_delta_pct": 0.17758366277150436,
     "wilcoxon_p_value": 0.06238182359673901,
     "statistically_significant (p<0.05)": false,
-    "roi_improves_survival_AND_significant": false
+    "roi_improves_survival_AND_significant": false,
+    "wilcoxon_p_bh_adjusted": 0.12476364719347802,
+    "statistically_significant_after_bh_correction": false
   },
   "line_discontinuity": {
     "n": 100,
@@ -17,7 +19,9 @@
     "relative_delta_pct": 0.44345996411990485,
     "wilcoxon_p_value": 0.18444471851330213,
     "statistically_significant (p<0.05)": false,
-    "roi_improves_survival_AND_significant": false
+    "roi_improves_survival_AND_significant": false,
+    "wilcoxon_p_bh_adjusted": 0.18444471851330213,
+    "statistically_significant_after_bh_correction": false
   },
   "particle": {
     "n": 100,
@@ -27,7 +31,9 @@
     "relative_delta_pct": 0.11470460444033258,
     "wilcoxon_p_value": 0.10170516363941541,
     "statistically_significant (p<0.05)": false,
-    "roi_improves_survival_AND_significant": false
+    "roi_improves_survival_AND_significant": false,
+    "wilcoxon_p_bh_adjusted": 0.13560688485255387,
+    "statistically_significant_after_bh_correction": false
   },
   "NONE_hallucination_check": {
     "n": 100,
@@ -37,6 +43,8 @@
     "relative_delta_pct": 0.7750451127639649,
     "wilcoxon_p_value": 0.038787590867568576,
     "statistically_significant (p<0.05)": true,
-    "roi_improves_survival_AND_significant": true
+    "roi_improves_survival_AND_significant": true,
+    "wilcoxon_p_bh_adjusted": 0.12476364719347802,
+    "statistically_significant_after_bh_correction": false
   }
 }
