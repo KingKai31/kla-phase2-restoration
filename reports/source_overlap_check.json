@@ -1,0 +1,17 @@
+{
+  "summary": {
+    "n_our_images": 4785,
+    "n_nffa_images": 1421,
+    "hash_bits": 256,
+    "match_threshold": 10,
+    "n_candidate_matches": 0,
+    "min_distance_distribution": {
+      "mean": 54.45460942997889,
+      "median": 50.0,
+      "min": 12,
+      "p1": 29.0,
+      "p5": 37.0
+    }
+  },
+  "candidates": []
+}

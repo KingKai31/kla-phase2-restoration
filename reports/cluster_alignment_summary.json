@@ -1,0 +1,23 @@
+{
+  "Biological": {
+    "n_images": 962,
+    "n_distinct_clusters_hit": 18,
+    "top_cluster": 6,
+    "top_cluster_fraction": 0.27754677754677753,
+    "top3_clusters_fraction": 0.6372141372141372
+  },
+  "Fibres": {
+    "n_images": 150,
+    "n_distinct_clusters_hit": 16,
+    "top_cluster": 2,
+    "top_cluster_fraction": 0.18666666666666668,
+    "top3_clusters_fraction": 0.5133333333333333
+  },
+  "Films_Coated_Surface": {
+    "n_images": 309,
+    "n_distinct_clusters_hit": 15,
+    "top_cluster": 6,
+    "top_cluster_fraction": 0.2297734627831715,
+    "top3_clusters_fraction": 0.5922330097087378
+  }
+}
