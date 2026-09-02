@@ -1,0 +1,21 @@
+{
+  "n_images": 716,
+  "lipschitz_estimate_stats": {
+    "mean": 0.39516271936415187,
+    "std": 0.09382470490233465,
+    "min": 0.169489998370409,
+    "max": 0.5784845561720431
+  },
+  "correlation_with_psnr": {
+    "pearson_r": -0.6141038998036334,
+    "pearson_p": 1.937183749613245e-75,
+    "spearman_r": -0.6222932440271913,
+    "spearman_p": 5.500693893019116e-78
+  },
+  "correlation_with_ssim": {
+    "pearson_r": 0.191787192740177,
+    "pearson_p": 2.3286290431919778e-07,
+    "spearman_r": 0.1770210388475506,
+    "spearman_p": 1.877568557597744e-06
+  }
+}
