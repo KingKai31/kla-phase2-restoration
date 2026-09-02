@@ -1,0 +1,42 @@
+{
+  "n_train_real": 4073,
+  "n_train_synthetic": 8526,
+  "n_train_total": 12599,
+  "n_val": 712,
+  "init_checkpoint": "checkpoints/stage_a_best.pt",
+  "init_val_psnr": 23.483065963141588,
+  "epochs_run": 35,
+  "epochs_budgeted": 80,
+  "best_epoch": 9,
+  "best_val_psnr": 23.49863780223793,
+  "best_val_ssim": 0.5950050199119561,
+  "psnr_gain_over_stage_a": 0.015571839096342188,
+  "n_clusters_in_val": 20,
+  "watch_clusters_11_14_comparison": {
+    "11": {
+      "stage_a_psnr": 19.66890350893865,
+      "stage_b_psnr": 19.665022207114866,
+      "delta": -0.0038813018237853214
+    },
+    "14": {
+      "stage_a_psnr": 19.20286803714662,
+      "stage_b_psnr": 19.194610263807256,
+      "delta": -0.008257773339362728
+    }
+  },
+  "worst_cluster_psnr": {
+    "cluster": 9,
+    "mean_psnr": 13.055526982672509,
+    "n": 2
+  },
+  "best_cluster_psnr": {
+    "cluster": 15,
+    "mean_psnr": 28.45032003470494,
+    "n": 19
+  },
+  "total_wall_clock_sec": 1380.5325903892517,
+  "mean_epoch_time_sec": 39.43924593925476,
+  "device": "cuda",
+  "gpu_name": "NVIDIA A100-SXM4-80GB",
+  "checkpoint": "checkpoints/stage_b_best.pt"
+}

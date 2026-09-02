@@ -492,6 +492,16 @@ content, clusters 11/14 should improve; if they stay flat despite more
 data, that would point toward an architectural limit on high-frequency
 recovery rather than a data-coverage gap.
 
+**Resolved by Stage B (`reports/STAGE_B_RESULTS.md`): clusters 11/14
+stayed flat (-0.004dB, -0.008dB) after adding 8,526 synthetic pairs - but
+so did all 18 other clusters (16/20 changed by <0.05dB overall).** Since
+the flatness is uniform, not localized to 11/14, it does NOT point to an
+architectural high-frequency limit specifically - it points to the
+synthetic data simply not carrying a strong enough training signal,
+plausibly explained by Part 6's already-disclosed ~22% high-frequency
+spectral deficit in the synthetic generator's output. Clusters 11/14
+remain a real, unresolved weak subgroup either way.
+
 ---
 
 ## Implication for the next phase
