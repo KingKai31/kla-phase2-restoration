@@ -295,9 +295,18 @@ available, not assumed necessary.
   confirmed to suppress checkerboard at the source, but removing the
   blur cost more PSNR than the pre-registered slack allowed. The blur
   stays in `run.py`, unchanged. Full detail: `reports/ITEM_1_2_RESULTS.md`.
-- **Item 3 (boundary-masked loss redesign targeting the Axis 5 mechanism)
-  and Item 4 (multi-seed variance for the decision gates): deferred, not
-  attempted, given the deadline** - explicitly scoped as lower-priority/
-  higher-risk (Item 3) and lowest-leverage (Item 4) in the improvement
-  pass's own plan. The submission ships without them: a verified,
-  decisively-improved model, not an unverified, more-promising one.
+- **Item 3 (a boundary-masked edge loss, the fix that follows directly
+  from the Axis 5 diagnosis) and Item 4 (multi-seed variance for the
+  decision gates): NOT attempted - explicitly time-boxed out given the
+  same-day deadline, stated plainly, not left to be inferred.** Both were
+  scoped in advance as lower-priority/higher-risk (Item 3, with a real
+  chance of failing its own gate the same way ROI-preservation and the
+  correlated-noise fix did) and lowest-leverage (Item 4) in the
+  improvement pass's own plan, and a deliberate stop-here decision was
+  made once Items 1/2/5/6 were fully verified. **Concrete consequence:
+  Axis 5's loss-dilution mechanism - the Charbonnier-dominated loss
+  behaving as a median estimator, with the Sobel edge term diluted across
+  all pixels rather than the true boundaries - remains a known, diagnosed,
+  and unaddressed limitation of the shipped model.** The submission ships
+  a verified, decisively-improved model, not an unverified, more-promising
+  one.

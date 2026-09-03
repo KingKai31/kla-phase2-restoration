@@ -110,7 +110,13 @@ tested in Axis 1b) showed no meaningful difference from baseline -
 behavior (compounded by ~10% real inference-blur asymmetry, measured).
 The improvement pass that followed (`reports/ITEM_1_2_RESULTS.md`)
 improved reconstruction quality broadly but did not touch the loss
-function, so this gap is expected to persist unchanged.
+function, so this gap is expected to persist unchanged. **Stated plainly,
+not implied: the targeted fix (a boundary-masked edge loss, the direct
+structural fix for this exact dilution) was explicitly NOT attempted -
+deliberately time-boxed out given the same-day deadline, once Items 1/2/5/6
+were fully verified and a real, decisive win was already in hand. Axis
+5's loss-dilution mechanism remains a known, diagnosed, and unaddressed
+limitation of the shipped model.**
 
 ## What this pass adds to the submission's real story
 

@@ -110,6 +110,12 @@ wrong-cwd combined check, real timing).
     suppresses checkerboard at the source) failed honestly - the blur
     stays. Full compliance chain (25-test suite, fresh-venv +
     no-internet + wrong-cwd) re-verified on the new checkpoint.
+    **A further, higher-risk item (a boundary-masked edge loss, the fix
+    that follows directly from the Axis 5 diagnosis) was explicitly
+    NOT attempted - time-boxed out given the same-day deadline once this
+    verified win was in hand, stated here plainly: Axis 5's
+    loss-dilution mechanism remains a known, diagnosed, unaddressed
+    limitation of the shipped model.**
 
 **Phase 1's fitted noise-model numbers do NOT apply to this dataset** and
 are not carried over anywhere in this repo - every number here is
