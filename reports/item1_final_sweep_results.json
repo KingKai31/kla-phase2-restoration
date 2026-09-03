@@ -1,0 +1,32 @@
+[
+  {
+    "weight": 0.05,
+    "init_val_psnr": 23.79782161993114,
+    "epochs_run": 13,
+    "best_epoch": 2,
+    "best_val_psnr": 23.595575707085178,
+    "best_val_ssim": 0.6171662633573678,
+    "wall_clock_sec": 216.61205554008484,
+    "checkpoint": "/workspace/kla-restoration-phase2/checkpoints/item1_final_w0.05.pt"
+  },
+  {
+    "weight": 0.1,
+    "init_val_psnr": 23.79782161993114,
+    "epochs_run": 13,
+    "best_epoch": 2,
+    "best_val_psnr": 23.444929545398644,
+    "best_val_ssim": 0.6173412948305587,
+    "wall_clock_sec": 213.77291250228882,
+    "checkpoint": "/workspace/kla-restoration-phase2/checkpoints/item1_final_w0.1.pt"
+  },
+  {
+    "weight": 0.2,
+    "init_val_psnr": 23.79782161993114,
+    "epochs_run": 11,
+    "best_epoch": 0,
+    "best_val_psnr": 23.172441169909202,
+    "best_val_ssim": 0.6165963965033692,
+    "wall_clock_sec": 180.00750708580017,
+    "checkpoint": "/workspace/kla-restoration-phase2/checkpoints/item1_final_w0.2.pt"
+  }
+]
