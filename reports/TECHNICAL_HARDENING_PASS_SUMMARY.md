@@ -117,11 +117,28 @@ diagnosed**: real-mask edge retention improved 0.705 -> 0.819 (~4x the
 pre-registered gate), with SSIM and LPIPS both improving too. **But
 official-test PSNR dropped 0.258dB (~10x the measured seed-variance
 floor), failing the pre-registered gate, and the fix was not adopted**
-(`reports/ITEM_3_RESULTS.md`). **Stated plainly: Axis 5's loss-dilution
-mechanism is now confirmed causal and demonstrably fixable, but the fix
-that closes it trades away pixel fidelity by more than this project's own
-pre-registered tolerance allows - a known, diagnosed, and still
-unaddressed limitation of the shipped model.**
+(`reports/ITEM_3_RESULTS.md`). A follow-up pass then re-tried the same
+term at three *small* weights alongside the existing loss stack rather
+than replacing it; the PSNR cost appeared immediately and scaled
+smoothly with weight, **failing at every weight including the smallest**
+(`reports/ITEM_1_FINAL_GRADUATED_EDGE_RESULTS.md`) - establishing the
+loss-side tradeoff as **structural, not a tuning artifact.**
+
+**Current status of this axis — partially improved, and the shipped
+model changed.** A later pass attacked the same gap from a completely
+different direction: **decoder capacity** rather than loss incentive.
+One extra lightweight residual block immediately before the pixel-shuffle
+head raised real-mask edge retention **0.705 -> 0.735** at **+0.12%
+parameters**, with PSNR/SSIM differences ~8x *below* the same-seed
+reproducibility floor and LPIPS slightly better - the first intervention
+in this project to clear its own pre-registered gate, and **now the
+shipped model** (`reports/NEW_TECHNIQUES_RESULTS.md`). **Stated plainly:
+roughly 17% of the gap to classical's 0.879 is closed; 0.144 remains.
+The model still preserves real annotated boundaries worse than
+bicubic+NLM, and that is still this submission's most important open
+limitation** - but the mechanism is now precisely characterized as
+*both* a loss-incentive limit (fixable, but not for free) and a
+representational-capacity limit (partly fixable, essentially free).
 
 ## What this pass adds to the submission's real story
 

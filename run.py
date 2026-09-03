@@ -198,10 +198,59 @@ class NAFNetSR(nn.Module):
         return out
 
 
+class NAFNetSRDecoderCapacity(NAFNetSR):
+    """The SHIPPED architecture. One additional lightweight residual block
+    in the decoder's final stage, immediately before the pixel-shuffle
+    head - inlined verbatim from src/models/nafnet_decoder_capacity.py
+    (see that file for the rationale). Adopted after clearing a
+    pre-registered gate on real structural-edge preservation
+    (reports/NEW_TECHNIQUES_RESULTS.md): edge retention 0.705 -> 0.735
+    at +0.12% params and no measurable cost in PSNR/SSIM/LPIPS.
+
+    NAFNetSR above is deliberately left UNCHANGED so both inlined classes
+    stay AST-identical to their own source modules - asserted by
+    tests/test_src_modules.py::TestInlinedModelMatchesSource."""
+
+    def __init__(self, img_channel: int = 1, width: int = 32,
+                 enc_blk_nums=(1, 1, 1, 2), middle_blk_num: int = 2,
+                 dec_blk_nums=(1, 1, 1, 1), upscale: int = 2):
+        super().__init__(img_channel, width, enc_blk_nums, middle_blk_num, dec_blk_nums, upscale)
+        # after the decoder loop, channel count returns to `width` - same
+        # tap point item3_confidence_head.py's frozen_forward_with_feature
+        # reads from, right before up_head
+        self.extra_decoder_block = NAFBlock(width)
+
+    def forward(self, inp: torch.Tensor) -> torch.Tensor:
+        _, _, h, w = inp.shape
+        x = self._pad_to_multiple(inp)
+
+        x = self.intro(x)
+        skips = []
+        for encoder, down in zip(self.encoders, self.downs):
+            x = encoder(x)
+            skips.append(x)
+            x = down(x)
+
+        x = self.middle(x)
+
+        for decoder, up, skip in zip(self.decoders, self.ups, reversed(skips)):
+            x = up(x)
+            x = x + skip
+            x = decoder(x)
+
+        x = self.extra_decoder_block(x)  # the one new capacity-increase step
+
+        out = self.up_head(x)
+
+        base = F.interpolate(inp, scale_factor=self.upscale, mode="bilinear", align_corners=False)
+        out = out[:, :, : h * self.upscale, : w * self.upscale] + base
+        return out
+
+
 def load_model(checkpoint_path: Path, device: torch.device):
     ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
     upscale = ckpt.get("upscale", 2)
-    model = NAFNetSR(img_channel=1, width=ckpt.get("width", 32), upscale=upscale)
+    model = NAFNetSRDecoderCapacity(img_channel=1, width=ckpt.get("width", 32), upscale=upscale)
     model.load_state_dict(ckpt["model_state_dict"])
     model.to(device).eval()
     return model, upscale

@@ -36,27 +36,70 @@ from src.datasets.synthetic_degrade import (  # noqa: E402
 
 # ---------------------------------------------------------------------------
 class TestInlinedModelMatchesSource:
-    """run.py inlines the model instead of importing src/models/nafnet.py (a
-    hard self-containment requirement). These must never silently diverge."""
+    """run.py inlines its model classes instead of importing from src/ (a
+    hard self-containment requirement). These must never silently diverge.
+
+    run.py now inlines TWO class groups, each guarded against its own
+    source module:
+      - the NAFNet building blocks + NAFNetSR  -> src/models/nafnet.py
+      - NAFNetSRDecoderCapacity (the SHIPPED   -> src/models/nafnet_decoder_capacity.py
+        architecture, adopted after clearing its pre-registered gate)
+
+    Docstrings are stripped before comparison. The guard exists to catch
+    BEHAVIORAL divergence, and a docstring cannot cause any; run.py's
+    inlined copies legitimately carry extra explanation for a reader of
+    the self-contained submission file, where the source modules put that
+    context at module level instead. Comments and formatting were already
+    normalized away by the unparse round-trip - this extends the same
+    principle to docstrings. All executable logic is still compared
+    exactly."""
+
+    SOURCE_MAP = {
+        "src/models/nafnet.py": ["LayerNorm2d", "SimpleGate", "SimplifiedChannelAttention",
+                                  "NAFBlock", "NAFNetSR"],
+        "src/models/nafnet_decoder_capacity.py": ["NAFNetSRDecoderCapacity"],
+    }
 
     @staticmethod
-    def _classes(path):
+    def _strip_docstring(node):
+        node = ast.parse(ast.unparse(node)).body[0]
+        if (node.body and isinstance(node.body[0], ast.Expr)
+                and isinstance(node.body[0].value, ast.Constant)
+                and isinstance(node.body[0].value.value, str)):
+            node.body = node.body[1:]
+        return node
+
+    @classmethod
+    def _classes(cls, path):
         tree = ast.parse(path.read_text(encoding="utf-8"))
-        # round-trip through unparse so formatting/comment differences don't matter
-        return {n.name: ast.dump(ast.parse(ast.unparse(n)))
+        # round-trip through unparse so formatting/comment differences don't
+        # matter; strip docstrings so only executable logic is compared
+        return {n.name: ast.dump(ast.parse(ast.unparse(cls._strip_docstring(n))))
                 for n in tree.body if isinstance(n, ast.ClassDef)}
 
-    def test_same_class_names(self):
-        src = self._classes(REPO_ROOT / "src" / "models" / "nafnet.py")
+    def test_run_py_defines_every_expected_class(self):
         run = self._classes(REPO_ROOT / "run.py")
-        assert set(src).issubset(set(run)), f"run.py is missing model classes: {set(src) - set(run)}"
+        expected = {c for names in self.SOURCE_MAP.values() for c in names}
+        missing = expected - set(run)
+        assert not missing, f"run.py is missing model classes: {missing}"
 
-    def test_every_shared_class_is_ast_identical(self):
-        src = self._classes(REPO_ROOT / "src" / "models" / "nafnet.py")
+    def test_shipped_architecture_is_the_decoder_capacity_variant(self):
+        """The adopted architecture must actually be the one run.py builds -
+        guards against run.py silently reverting to the plain backbone."""
+        src = (REPO_ROOT / "run.py").read_text(encoding="utf-8")
+        assert "model = NAFNetSRDecoderCapacity(" in src, (
+            "run.py's load_model() no longer constructs NAFNetSRDecoderCapacity - "
+            "the shipped checkpoint would fail to load."
+        )
+
+    @pytest.mark.parametrize("source_rel", list(SOURCE_MAP))
+    def test_every_inlined_class_is_ast_identical_to_its_source(self, source_rel):
+        src = self._classes(REPO_ROOT / source_rel)
         run = self._classes(REPO_ROOT / "run.py")
-        mismatched = [c for c in sorted(set(src) & set(run)) if src[c] != run[c]]
+        expected = self.SOURCE_MAP[source_rel]
+        mismatched = [c for c in expected if c in src and c in run and src[c] != run[c]]
         assert not mismatched, (
-            f"run.py's inlined model has DIVERGED from src/models/nafnet.py for: {mismatched}. "
+            f"run.py's inlined model has DIVERGED from {source_rel} for: {mismatched}. "
             "The shipped inference code no longer matches the trained architecture."
         )
 

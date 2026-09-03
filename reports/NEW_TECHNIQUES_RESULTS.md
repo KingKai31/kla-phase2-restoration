@@ -83,23 +83,57 @@ for free, which is consistent with the hypothesis it was designed to
 test: the decoder genuinely lacked the *capacity* to represent sharp
 boundaries, and no amount of loss reweighting could substitute for that.
 
-### Adoption requires a change the pre-registration did not anticipate
+### ADOPTED — with explicit approval, after the full chain passed
 
-`run.py`'s **inlined model class cannot load this checkpoint** - verified
-directly (`RuntimeError: Unexpected key(s) in state_dict:
-"extra_decoder_block.*"`). Unlike every prior adoption in this project
-(which were pure checkpoint swaps), adopting Item 1 means **editing the
-single most fail-critical file in the submission**, plus updating the
-AST-guard test (which currently asserts `run.py`'s inlined model matches
-`src/models/nafnet.py`, a different class from the adopted one), then
-re-running the full compliance chain and regenerating
-`test_predictions/`.
+`run.py`'s inlined model could not load this checkpoint (verified:
+`RuntimeError: Unexpected key(s) in state_dict: "extra_decoder_block.*"`),
+so adoption required editing the single most fail-critical file - more
+than the pure checkpoint swap the pre-registration assumed. That was
+surfaced as a decision and **explicitly approved** before proceeding.
 
-That is more than a checkpoint swap, and it is being surfaced as a
-decision rather than executed unilaterally - the pre-registration
-committed to "full re-verification before any checkpoint swap," but it
-assumed a swap, not a modification to `run.py` itself.
+**What changed, and how the risk was contained:**
 
-**Current state: not adopted, pending that decision.**
-`models/checkpoint.pt` unchanged (`36d2d38c...`), working tree clean,
-the pushed fallback fully intact.
+- `run.py`'s existing `NAFNetSR` class and all building blocks were left
+  **completely untouched** - still byte-for-byte AST-identical to
+  `src/models/nafnet.py`. The new architecture was **added** as a
+  subclass (`NAFNetSRDecoderCapacity`, inlined from
+  `src/models/nafnet_decoder_capacity.py`), and exactly one line changed
+  in `load_model()`. Net diff: **50 insertions, 1 deletion.**
+- The AST-guard test was reworked to guard **two** class groups against
+  their own source modules, and now also asserts `load_model()` actually
+  constructs the adopted class (so `run.py` cannot silently revert to the
+  plain backbone). Docstrings are stripped before comparison - they
+  cannot cause behavioral divergence, and `run.py`'s inlined copy
+  legitimately carries extra explanation for a reader of the
+  self-contained file.
+- **The guard was fault-injected to prove it works:** a deliberate
+  `* 1.01` inserted into `run.py`'s inlined `forward` made the test fail
+  exactly as intended (`assert not ['NAFNetSRDecoderCapacity']`), then
+  the file was restored and re-verified. A green guard that has never
+  been shown to fail proves nothing.
+
+**Full compliance chain, re-run against the post-swap combination
+(not reused from before the swap):**
+
+| Check | Result |
+|---|---|
+| 25-test adversarial suite | **25/25 pass** |
+| Full local suite (incl. reworked guard) | **51/51 pass** |
+| Fresh venv + no-internet + wrong-cwd, combined, one process | **PASS** - 0 network calls, cwd `/tmp`, 5/5 spec-compliant, new `run.py` + sha-verified new checkpoint |
+| `models/checkpoint.pt` sha256 | `7b77678d1742...c9fb0412` (Item 1's checkpoint, confirmed) |
+| Official test set, regenerated | 297/297, **0 fallbacks**, all (256,256) float32, finite, in [0,1] |
+
+**Final official-test numbers (adopted model, n=297):** PSNR **24.001**,
+SSIM **0.6251**, LPIPS **0.1605**. Ni-WC real-mask edge retention
+**0.735**. Inference **86.08 +/- 1.52 ms/image** (N=20 cold-start runs).
+
+**Honest nuance on the paired comparison vs. the previous shipped
+model:** at n=297, even micro-differences reach statistical
+significance. PSNR is -0.0033dB (p=0.003) and SSIM -0.00063 (p=2.2e-14) -
+both *statistically* significant, both roughly **8x smaller than the
+0.026dB same-seed reproducibility floor**, i.e. statistically detectable
+but practically meaningless. LPIPS improved (-0.0011, p=0.0035). The
+pre-registered gate deliberately used the reproducibility floor rather
+than a significance test for exactly this reason. The real payoff is the
+**+0.030 edge-retention gain**, an effect an order of magnitude larger
+than any of these deltas.

@@ -11,21 +11,28 @@ labels ship with the delivery).
 ## Status: submission-ready
 
 **Official test-set results (KLA's Phase 2 test set, real GT, n=297,
-leakage-checked against training): PSNR=24.004dB, SSIM=0.6257,
-LPIPS=0.1616 - +3.67dB over the classical baseline (paired Wilcoxon
-p<1e-49, bootstrap 95% CI [+3.44, +3.92]).** Restored outputs are in
-`test_predictions/`. Full writeup:
+leakage-checked against training): PSNR=24.001dB, SSIM=0.6251,
+LPIPS=0.1605 - +3.67dB over the classical baseline (paired Wilcoxon
+p<1e-49).** Restored outputs are in `test_predictions/`. Full writeup:
 **[reports/OFFICIAL_TEST_SET_RESULTS.md](reports/OFFICIAL_TEST_SET_RESULTS.md)**
 - these are the only numbers here measured against externally-released
 ground truth; everything below is the internal proxy split.
 
-**Shipped model: Stage A + dihedral augmentation + EMA + ICNR init
-(`checkpoints/stage_a_aug_raw_best.pt`, `models/checkpoint.pt` in the
-submission), trained on the real 4,785 pairs only.** Internal val
-PSNR=23.798dB, val SSIM=0.6132 (712-image leakage-checked val split) -
-**+0.315dB over the original Stage A (23.483dB), confirmed on the
-official test set too (+0.243dB, p<1e-49)**, per a same-day improvement
-pass: **[reports/ITEM_1_2_RESULTS.md](reports/ITEM_1_2_RESULTS.md)**.
+**Shipped model: Stage A + dihedral augmentation + EMA + ICNR init +
+a decoder-final-stage capacity block
+(`checkpoints/item1_decoder_capacity_best.pt`, `models/checkpoint.pt` in
+the submission), trained on the real 4,785 pairs only.** The last of
+those - one extra lightweight residual block immediately before the
+pixel-shuffle head - was adopted after clearing a pre-registered gate on
+**real structural-edge preservation: 0.705 -> 0.735** (+0.030 measured
+against real pixel-level segmentation masks), at +0.12% parameters and
+no practically meaningful cost in PSNR/SSIM/LPIPS. It is the only
+intervention across many attempts to improve this project's headline
+limitation without paying for it elsewhere:
+**[reports/NEW_TECHNIQUES_RESULTS.md](reports/NEW_TECHNIQUES_RESULTS.md)**.
+The augmentation/EMA/ICNR step before it contributed **+0.315dB internal
+/ +0.243dB official (p<1e-49)** over the original Stage A (23.483dB):
+**[reports/ITEM_1_2_RESULTS.md](reports/ITEM_1_2_RESULTS.md)**.
 Full verification, the complete honest story (Stage A -> Stage B null
 result -> spectral-fix failure -> technical hardening pass -> this
 improvement pass), and every disclosed limitation:
@@ -124,6 +131,33 @@ wrong-cwd combined check, real timing).
     mechanism is confirmed causal and fixable, but the fix as tried here
     trades away pixel fidelity - a real, disclosed, unresolved limitation
     of the shipped model**, not a hidden one.
+14. **Three genuinely new technique classes, and the first real success
+    against the edge-preservation gap** (`reports/NEW_TECHNIQUES_RESULTS.md`):
+    every prior attempt changed loss-term *weights* on the same
+    architecture; these changed architecture, training strategy, and
+    model output respectively.
+    - **ADOPTED - a decoder-only capacity increase.** One extra
+      lightweight residual block immediately before the pixel-shuffle
+      head (near-identity at init, verified numerically exact). **Edge
+      retention 0.705 -> 0.735** (+0.030, clearing its pre-registered
+      gate), at **+0.12% parameters** and no practically meaningful cost
+      elsewhere. Where every loss-based attempt bought edge retention *by
+      paying PSNR*, this one didn't - supporting exactly what it was
+      built to test: the decoder lacked the **capacity** for sharp
+      boundaries, not the loss incentive. Adopting it required editing
+      `run.py` (the shipped architecture changed), done under a full
+      re-verified compliance chain with the AST guard reworked and
+      fault-injection-tested.
+    - **Not adopted - a severity curriculum** (official PSNR 23.976 vs.
+      required >=24.054). Real finding inside the failure: the mild-only
+      first phase drove val PSNR *down*, recovered sharply the moment
+      the uniform phase began, but early stopping ended the run before
+      the harsh-oversample phase ever started - so half the hypothesis
+      remains untested, a bounded negative rather than a refutation.
+    - **Not adopted - an auxiliary confidence head** (per-image Spearman
+      r=0.226 vs. required 0.3). Not null either: **all 712/712** val
+      images showed a positive, individually significant correlation
+      between predicted confidence and real error.
 
 **Phase 1's fitted noise-model numbers do NOT apply to this dataset** and
 are not carried over anywhere in this repo - every number here is

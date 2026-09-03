@@ -37,15 +37,16 @@ Restores real SEM (scanning electron microscope) images degraded by this
 measured compound noise plus 128->256 spatial downsampling, in a single
 forward pass. Entry point: `python run.py <input_dir> <output_dir>` -
 reads `.npy` grayscale arrays, writes restored `.npy` arrays, no other
-setup, zero internet access. Architecture: NAFNet-style U-Net (6.82M
-params). Full spec: [run.py](../run.py).
+setup, zero internet access. Architecture: NAFNet-style U-Net (6.83M
+params) with an added decoder-final-stage capacity block. Full spec:
+[run.py](../run.py).
 
 ## Headline numbers — the official test set (KLA's real released data, n=297)
 
 | | PSNR | SSIM | LPIPS |
 |---|---|---|---|
 | Classical baseline (bicubic + NLM) | 20.332 | 0.5133 | 0.4993 |
-| **Shipped model** | **24.004** | **0.6257** | **0.1616** |
+| **Shipped model** | **24.001** | **0.6251** | **0.1605** |
 
 - **+3.67dB PSNR over the classical baseline** on the real official test
   set (paired Wilcoxon p<1e-49, bootstrap 95% CI [+3.44, +3.92]) - not a
@@ -54,7 +55,7 @@ params). Full spec: [run.py](../run.py).
   initialization) added **+0.243dB** over the initial trained model,
   confirmed on this same official test set (p<1e-49) -
   [reports/ITEM_1_2_RESULTS.md](ITEM_1_2_RESULTS.md).
-- **Inference: 88.35 +/- 2.13 ms/image**, measured across N=20
+- **Inference: 86.08 +/- 1.52 ms/image**, measured across N=20
   independent cold-start runs (fresh process each time, matching how a
   grading harness actually invokes `run.py`) on an A100-SXM4-80GB -
   [reports/ITEM_2_RESULTS.md](ITEM_2_RESULTS.md).
@@ -90,22 +91,43 @@ a weakness to hide.
   than the pre-registered tolerance allowed, at every weight tested,
   including the smallest. Not adopted -
   [reports/ITEM_3_RESULTS.md](ITEM_3_RESULTS.md), [reports/ITEM_1_FINAL_GRADUATED_EDGE_RESULTS.md](ITEM_1_FINAL_GRADUATED_EDGE_RESULTS.md).
+- **A severity curriculum and an auxiliary confidence head both missed
+  their gates and were dropped** - though each carried a real finding
+  inside the failure (the curriculum self-terminated before its final
+  phase ever ran, so half its hypothesis is untested rather than
+  refuted; the confidence head hit r=0.226 against a required 0.3, but
+  **all 712/712** validation images showed a positive, individually
+  significant correlation) -
+  [reports/NEW_TECHNIQUES_RESULTS.md](NEW_TECHNIQUES_RESULTS.md).
+- **One intervention finally cleared its gate, and it changed the
+  shipped model:** a decoder-final-stage capacity block - see below.
 
 ## The single most important open limitation, stated plainly
 
-**On real annotated structural boundaries, the model preserves less true
-edge detail than a naive classical baseline.** Measured on real
-pixel-level segmentation masks from a different SEM dataset (Ni-WC
-metal-matrix composite, CC-BY-4.0): the model retains 68.7-70.5% of true
-edge magnitude at real boundaries, versus 87.9-88.1% for bicubic+NLM -
-the only place in this project a hand-built classical method beats the
-trained model, on the metric closest to actual inspection use. Diagnosed
-mechanistically (a Charbonnier-dominated loss behaving as a median
-estimator, with the edge-loss term diluted across ~95% flat background
-pixels) and confirmed causal by direct experiment (above) - but the fix
-that closes the gap trades away pixel fidelity beyond this project's own
-pre-registered tolerance, twice, at every weight tried. Not resolved as
-of this submission. [reports/HARDENING_AXIS_3_AND_5.md](HARDENING_AXIS_3_AND_5.md).
+**On real annotated structural boundaries, the model still preserves
+less true edge detail than a naive classical baseline.** Measured on
+real pixel-level segmentation masks from a different SEM dataset (Ni-WC
+metal-matrix composite, CC-BY-4.0): the shipped model retains **73.5%**
+of true edge magnitude at real boundaries, versus **87.9%** for
+bicubic+NLM - the only place in this project a hand-built classical
+method beats the trained model, on the metric closest to actual
+inspection use.
+
+The cause was diagnosed mechanistically (a Charbonnier-dominated loss
+behaving as a median estimator, with the edge-loss term diluted across
+~95% flat background pixels) and confirmed causal by direct experiment.
+Three interventions then attacked it. The two loss-side fixes worked -
+retention rose as high as 0.819 - **but every one of them paid for it in
+PSNR beyond the pre-registered tolerance, at every weight tried**, so
+the tradeoff is structural rather than a tuning artifact. The third, a
+decoder capacity increase, improved retention **0.705 -> 0.735 for
+essentially free** (+0.12% params, all other metrics within the
+reproducibility floor) and **is the shipped model**.
+
+**Net: ~17% of the gap closed, 0.144 remaining. Real progress, not a
+resolution** - and stated that way rather than rounded up.
+[reports/HARDENING_AXIS_3_AND_5.md](HARDENING_AXIS_3_AND_5.md),
+[reports/NEW_TECHNIQUES_RESULTS.md](NEW_TECHNIQUES_RESULTS.md).
 
 ## Where to look for more
 

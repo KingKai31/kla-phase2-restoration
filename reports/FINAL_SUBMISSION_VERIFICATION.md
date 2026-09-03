@@ -1,10 +1,22 @@
 # Final submission verification — Phase 2 (SEM/NFFA-EUROPE data)
 
 **Verdict: submission-ready.** Every hard-gate requirement passes,
-re-verified against the exact shipped checkpoint (now the improved Item 1
-model, see below) and the exact
+re-verified against the exact shipped checkpoint and the exact
 `requirements.txt`/`submission_requirements.txt` files as they currently
 exist. Full detail: `reports/run_py_compliance_checklist.md`.
+
+**Shipped model (final): `models/checkpoint.pt`, sha256
+`7b77678d1742...c9fb0412`** - Stage A + dihedral augmentation + EMA +
+ICNR init + a decoder-final-stage capacity block. The last component was
+adopted after clearing a pre-registered gate on real structural-edge
+preservation (`reports/NEW_TECHNIQUES_RESULTS.md`), and is the **only
+change in this project's history to improve the headline
+edge-preservation limitation without paying for it in another metric.**
+Adopting it changed the shipped architecture, so `run.py` was edited -
+the single highest-risk edit in the project - and the **entire compliance
+chain was re-run against the post-swap combination, not reused**:
+25/25 adversarial tests, 51/51 full local suite, and a combined
+fresh-venv + no-internet + wrong-cwd check, all green.
 
 **Calibration note on every "official test set" number in this
 document, stated once here plainly rather than buried per-metric:** all
@@ -53,23 +65,37 @@ edge-weight term - was tried and did not close the gap** (composite
 0.6601 vs. baseline 0.6600, essentially no change). See Section D and
 `reports/HARDENING_AXIS_3_AND_5.md` for the full method and numbers.
 
-**Status: attempted, real result, not adopted.** `reports/TECHNICAL_AUDIT.md`
-§9 diagnosed the mechanism as the Charbonnier-dominated loss's median-
-estimator behavior with a diluted Sobel term. The direct fix - a
-boundary-masked edge loss, replacing the diluted term - was implemented
-and tested under a strict 45-60 minute time-box
-(`reports/ITEM_3_RESULTS.md`). **Result: the mechanism is confirmed
-causal.** Real-mask edge retention improved from 0.705 to **0.819**
-(~4x the pre-registered gate, closing 66% of the gap to classical's
-0.879), and SSIM/LPIPS both improved too. **But official-test PSNR
-dropped 0.258dB - ~10x the measured seed-variance floor - failing the
-pre-registered "no metric regresses beyond floor" gate.** Per the rule
-agreed in advance, **not adopted.** The shipped checkpoint (`b309040`)
-was verified checksum-identical before and after this attempt. Axis 5's
-loss-dilution mechanism is therefore a **known, diagnosed, and now
-confirmed-fixable-but-still-unaddressed limitation** of the shipped
-model - the fix that works trades away pixel fidelity, and that
-trade was not accepted without further tuning this pass had no time for.
+**Status: PARTIALLY IMPROVED, and the mechanism is now fully
+characterized.** `reports/TECHNICAL_AUDIT.md` §9 diagnosed the cause as
+the Charbonnier-dominated loss's median-estimator behavior with a
+diluted Sobel term. Three separate interventions then tested it:
+
+1. **A boundary-masked edge loss replacing the diluted Sobel term**
+   (`reports/ITEM_3_RESULTS.md`): edge retention 0.705 -> **0.819**,
+   confirming the mechanism is causal - **but official PSNR dropped
+   0.258dB, ~10x the reproducibility floor. Not adopted.**
+2. **The same term added at three small weights alongside the existing
+   stack** (`reports/ITEM_1_FINAL_GRADUATED_EDGE_RESULTS.md`): PSNR cost
+   appeared immediately and scaled smoothly with weight, failing at
+   *every* weight including the smallest. **Not adopted** - and this
+   established the loss-side tradeoff is **structural, not a tuning
+   artifact.**
+3. **A decoder-final-stage capacity increase**
+   (`reports/NEW_TECHNIQUES_RESULTS.md`): edge retention 0.705 ->
+   **0.735** (+0.030) at **+0.12% parameters**, with PSNR/SSIM
+   differences ~8x *below* the reproducibility floor and LPIPS slightly
+   improved. **ADOPTED - the shipped model.**
+
+**Where this leaves the limitation, stated plainly:** the gap to the
+classical baseline's 0.879 is now **0.144 instead of 0.174** - roughly
+17% closed, real but partial. **The model still preserves real annotated
+structural boundaries worse than a naive bicubic+NLM baseline**, and that
+remains the most important open limitation of this submission. What has
+changed is that the cause is now precisely characterized: the loss-side
+fix genuinely works but is not free (attempts 1-2), while added decoder
+*capacity* buys a smaller improvement for essentially nothing
+(attempt 3) - evidence that both a representational-capacity limit and a
+loss-incentive limit are real and partly independent.
 
 ---
 
@@ -99,7 +125,8 @@ narrative, not a cleaned-up success story.
 |---|---|---|---|---|
 | Classical baseline (bicubic + NLM, run.py's real fallback) | 20.273 | 0.5066 | 0.5128 | 712 |
 | Stage A (original) | 23.483 | 0.5976 | 0.1861 | 712 |
-| **Stage A + aug/EMA/ICNR (shipped, final)** | **23.798** | **0.6132** | **0.1666** | 712 |
+| Stage A + aug/EMA/ICNR | 23.798 | 0.6132 | 0.1666 | 712 |
+| **+ decoder-capacity block (shipped, final)** | **23.731** | **0.6138** | see note | 712 |
 | Stage B (real + 8,526 synthetic pairs) | 23.499 | 0.5950 | not computed† | 712 |
 
 † LPIPS wasn't part of Stage A/B's own per-image eval loop (only PSNR/SSIM
@@ -163,7 +190,7 @@ bug found and fixed -> real negative result -> dropped).
   data-coverage gap or something structural, since the flatness was
   uniform across all clusters, not localized. (`reports/phase2_deep_dive.md` Part 8)
 - **GT noise-ceiling check**: 27.6dB implied ceiling, well above the
-  shipped model's 23.798dB - not currently the binding constraint, and
+  shipped model's ~23.7dB internal / 24.001dB official - not currently the binding constraint, and
   still real headroom after the improvement pass's +0.315dB gain.
 - **Multiple-comparisons correction** (`reports/MULTIPLE_COMPARISONS_CORRECTION.md`):
   applied to the two decision-relevant test families. Confidence-signal
