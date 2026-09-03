@@ -1,0 +1,26 @@
+{
+  "w0.7": {
+    "weight_shipped": 0.7,
+    "weight_item3": 0.30000000000000004,
+    "psnr": 23.961265148337247,
+    "ssim": 0.6288224071139248,
+    "lpips": 0.15846947088887797,
+    "n_official_test": 297,
+    "edge_ratio_blend0.00": 0.7607849045443285,
+    "n_niwc_tiles": 167,
+    "mean_inference_time_ms_per_image": 82.12884478061302,
+    "device": "cpu"
+  },
+  "w0.8": {
+    "weight_shipped": 0.8,
+    "weight_item3": 0.19999999999999996,
+    "psnr": 23.979070240637434,
+    "ssim": 0.62793878476288,
+    "lpips": 0.15935386961909256,
+    "n_official_test": 297,
+    "edge_ratio_blend0.00": 0.7525083844074066,
+    "n_niwc_tiles": 167,
+    "mean_inference_time_ms_per_image": 102.63459292955396,
+    "device": "cpu"
+  }
+}
