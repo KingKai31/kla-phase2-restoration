@@ -1,0 +1,12 @@
+{
+  "checkpoint": "checkpoints/stage_a_best.pt",
+  "n": 712,
+  "mean_psnr": 23.483129871564337,
+  "mean_ssim": 0.5975780008487931,
+  "mean_lpips": 0.18612538378036927,
+  "mean_composite": 0.6575396670516861,
+  "psnr_reference_range": [
+    15.0,
+    30.0
+  ]
+}

@@ -1,9 +1,11 @@
 """
 Stage B composite loss: Charbonnier + MS-SSIM + light LPIPS + Sobel edge
-loss + range-consistency penalty.
-
-Kept as a separate module from Stage A's CharbonnierMSSSIMLoss (which stays
-as-is, documented and reproducible) rather than modifying it in place.
+loss + range-consistency penalty. This is also what Stage A actually
+trains with (scripts/train_stage_a.py imports StageBCompositeLoss
+directly) - the standalone Charbonnier+MS-SSIM-only loss this module's
+name contrasts against (src/losses/charbonnier_msssim.py) was never used
+by any training script and was deleted as dead code (Item 5, improvement
+pass) rather than left to imply a split that doesn't exist in practice.
 
 - LPIPS weight starts conservative (default 0.075, within the requested
   0.05-0.1 range) to avoid hallucinated texture - this is a starting point
