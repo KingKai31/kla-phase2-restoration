@@ -10,9 +10,18 @@ labels ship with the delivery).
 
 ## Status: submission-ready
 
+**Official test-set results (KLA's Phase 2 test set, real GT, n=297,
+leakage-checked against training): PSNR=23.761dB, SSIM=0.609,
+LPIPS=0.194 - +3.43dB over the classical baseline (paired Wilcoxon
+p<1e-49, bootstrap 95% CI [+3.21, +3.66]).** Restored outputs are in
+`test_predictions/`. Full writeup:
+**[reports/OFFICIAL_TEST_SET_RESULTS.md](reports/OFFICIAL_TEST_SET_RESULTS.md)**
+- these are the only numbers here measured against externally-released
+ground truth; everything below is the internal proxy split.
+
 **Shipped model: `checkpoints/stage_a_best.pt` (`models/checkpoint.pt` in
-the submission), trained on the real 4,785 pairs only.** Val PSNR=23.483dB,
-val SSIM=0.5976 (712-image leakage-checked val split). Full verification,
+the submission), trained on the real 4,785 pairs only.** Internal val
+PSNR=23.483dB, val SSIM=0.5976 (712-image leakage-checked val split). Full verification,
 the complete honest three-stage story (Stage A ships; a synthetic-data
 Stage B fine-tune was tried and gave a genuine null result; one targeted
 fix attempt failed its own pre-registered gate), and every disclosed
