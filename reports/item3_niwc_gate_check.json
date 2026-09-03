@@ -1,0 +1,6 @@
+{
+  "checkpoint": "checkpoints\\item3_boundary_edge_best.pt",
+  "n_tiles": 167,
+  "mean_edge_ratio_blend0.00": 0.8190003244299372,
+  "mean_edge_corr_blend0.00": 0.629579427546366
+}

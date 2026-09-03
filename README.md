@@ -110,12 +110,20 @@ wrong-cwd combined check, real timing).
     suppresses checkerboard at the source) failed honestly - the blur
     stays. Full compliance chain (25-test suite, fresh-venv +
     no-internet + wrong-cwd) re-verified on the new checkpoint.
-    **A further, higher-risk item (a boundary-masked edge loss, the fix
-    that follows directly from the Axis 5 diagnosis) was explicitly
-    NOT attempted - time-boxed out given the same-day deadline once this
-    verified win was in hand, stated here plainly: Axis 5's
-    loss-dilution mechanism remains a known, diagnosed, unaddressed
-    limitation of the shipped model.**
+13. **Item 3 - a boundary-masked edge loss, attempted, a real and
+    fascinating tradeoff, NOT adopted** (`reports/ITEM_3_RESULTS.md`):
+    directly replacing the diluted Sobel term with one masked to the
+    top-decile real-boundary pixels **worked exactly as diagnosed** - real
+    edge retention jumped 0.705 -> **0.819** (~4x the pre-registered
+    +0.030 gate, closing 66% of the gap to classical's 0.879) - and SSIM/
+    LPIPS both improved too. **But official-test PSNR dropped 0.258dB,
+    ~10x the measured seed-variance floor**, failing the pre-registered
+    "no metric regresses beyond floor" gate. Per the rule agreed in
+    advance, not adopted - `b309040`'s checkpoint, verified unmodified
+    (checksum-confirmed), remains final. **Axis 5's loss-dilution
+    mechanism is confirmed causal and fixable, but the fix as tried here
+    trades away pixel fidelity - a real, disclosed, unresolved limitation
+    of the shipped model**, not a hidden one.
 
 **Phase 1's fitted noise-model numbers do NOT apply to this dataset** and
 are not carried over anywhere in this repo - every number here is

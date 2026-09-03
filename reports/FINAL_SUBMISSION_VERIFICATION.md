@@ -41,15 +41,23 @@ edge-weight term - was tried and did not close the gap** (composite
 0.6601 vs. baseline 0.6600, essentially no change). See Section D and
 `reports/HARDENING_AXIS_3_AND_5.md` for the full method and numbers.
 
-**Status after the improvement pass above: unchanged, and expected to
-be.** `reports/TECHNICAL_AUDIT.md` §9 diagnosed the mechanism as the
-Charbonnier-dominated loss's median-estimator behavior, not
-reconstruction quality broadly - the augmentation/EMA/ICNR changes that
-produced the PSNR/SSIM/LPIPS win above do not touch the loss function or
-the diluted Sobel term, so this gap is not expected to have moved and was
-not re-measured. The loss redesign that follows directly from the
-diagnosis (a boundary-masked edge term) was scoped as a lower-priority,
-higher-risk item given the deadline and was not attempted this pass.
+**Status: attempted, real result, not adopted.** `reports/TECHNICAL_AUDIT.md`
+§9 diagnosed the mechanism as the Charbonnier-dominated loss's median-
+estimator behavior with a diluted Sobel term. The direct fix - a
+boundary-masked edge loss, replacing the diluted term - was implemented
+and tested under a strict 45-60 minute time-box
+(`reports/ITEM_3_RESULTS.md`). **Result: the mechanism is confirmed
+causal.** Real-mask edge retention improved from 0.705 to **0.819**
+(~4x the pre-registered gate, closing 66% of the gap to classical's
+0.879), and SSIM/LPIPS both improved too. **But official-test PSNR
+dropped 0.258dB - ~10x the measured seed-variance floor - failing the
+pre-registered "no metric regresses beyond floor" gate.** Per the rule
+agreed in advance, **not adopted.** The shipped checkpoint (`b309040`)
+was verified checksum-identical before and after this attempt. Axis 5's
+loss-dilution mechanism is therefore a **known, diagnosed, and now
+confirmed-fixable-but-still-unaddressed limitation** of the shipped
+model - the fix that works trades away pixel fidelity, and that
+trade was not accepted without further tuning this pass had no time for.
 
 ---
 
@@ -295,18 +303,26 @@ available, not assumed necessary.
   confirmed to suppress checkerboard at the source, but removing the
   blur cost more PSNR than the pre-registered slack allowed. The blur
   stays in `run.py`, unchanged. Full detail: `reports/ITEM_1_2_RESULTS.md`.
-- **Item 3 (a boundary-masked edge loss, the fix that follows directly
-  from the Axis 5 diagnosis) and Item 4 (multi-seed variance for the
-  decision gates): NOT attempted - explicitly time-boxed out given the
-  same-day deadline, stated plainly, not left to be inferred.** Both were
-  scoped in advance as lower-priority/higher-risk (Item 3, with a real
-  chance of failing its own gate the same way ROI-preservation and the
-  correlated-noise fix did) and lowest-leverage (Item 4) in the
-  improvement pass's own plan, and a deliberate stop-here decision was
-  made once Items 1/2/5/6 were fully verified. **Concrete consequence:
-  Axis 5's loss-dilution mechanism - the Charbonnier-dominated loss
-  behaving as a median estimator, with the Sobel edge term diluted across
-  all pixels rather than the true boundaries - remains a known, diagnosed,
-  and unaddressed limitation of the shipped model.** The submission ships
-  a verified, decisively-improved model, not an unverified, more-promising
-  one.
+- **Item 3 (a boundary-masked edge loss): attempted in a second,
+  strictly time-boxed pass (45-60 min), dropped by its own pre-registered
+  gate - a real, fascinating tradeoff, not a clean failure.** Real-mask
+  edge retention improved 0.705 -> 0.819 (~4x the required +0.030 gate)
+  and SSIM/LPIPS both improved, confirming the Axis 5 diagnosis is
+  causally correct and fixable - but official-test PSNR dropped 0.258dB
+  (~10x the seed-variance floor), failing the "no metric regresses beyond
+  floor" condition of the same gate. Per the rule agreed in advance,
+  **not adopted.** `b309040`'s checkpoint was checksum-verified unmodified
+  before and after. Full detail: `reports/ITEM_3_RESULTS.md`.
+- **Item 4 (multi-seed variance for the decision gates): NOT attempted -
+  explicitly time-boxed out, stated plainly, not left to be inferred.**
+  Scoped in advance as the lowest-leverage item in the improvement pass's
+  own plan; a deliberate stop-here decision was made once Items 1/2/3/5/6
+  were resolved. **Concrete consequence: Axis 5's loss-dilution mechanism
+  - the Charbonnier-dominated loss behaving as a median estimator, with
+  the original Sobel edge term diluted across all pixels rather than the
+  true boundaries - is now confirmed causal and demonstrably fixable
+  (Item 3), but the fix that works trades away pixel fidelity, and that
+  specific tradeoff was not accepted without further tuning this pass had
+  no time for. The gap remains a known, diagnosed, and unaddressed
+  limitation of the shipped model.** The submission ships a verified,
+  decisively-improved model, not an unverified, more-promising one.

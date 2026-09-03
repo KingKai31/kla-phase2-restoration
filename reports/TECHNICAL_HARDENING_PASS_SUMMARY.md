@@ -105,18 +105,23 @@ The proposed lightweight fix (double the existing Sobel loss weight,
 tested in Axis 1b) showed no meaningful difference from baseline -
 **this specific gap is not solved by that cheap lever.**
 (`reports/HARDENING_AXIS_3_AND_5.md`, `reports/AXIS_1B_RESULTS.md`)
-**Later diagnosed mechanistically, still unresolved:** `reports/TECHNICAL_AUDIT.md`
+**Later diagnosed mechanistically, then directly tested: confirmed
+causal, and a real tradeoff, not resolved.** `reports/TECHNICAL_AUDIT.md`
 §9 traced this to the Charbonnier-dominated loss's median-estimator
 behavior (compounded by ~10% real inference-blur asymmetry, measured).
 The improvement pass that followed (`reports/ITEM_1_2_RESULTS.md`)
 improved reconstruction quality broadly but did not touch the loss
-function, so this gap is expected to persist unchanged. **Stated plainly,
-not implied: the targeted fix (a boundary-masked edge loss, the direct
-structural fix for this exact dilution) was explicitly NOT attempted -
-deliberately time-boxed out given the same-day deadline, once Items 1/2/5/6
-were fully verified and a real, decisive win was already in hand. Axis
-5's loss-dilution mechanism remains a known, diagnosed, and unaddressed
-limitation of the shipped model.**
+function. A second, strictly time-boxed pass then implemented the direct
+fix - a boundary-masked edge loss - and **it worked exactly as
+diagnosed**: real-mask edge retention improved 0.705 -> 0.819 (~4x the
+pre-registered gate), with SSIM and LPIPS both improving too. **But
+official-test PSNR dropped 0.258dB (~10x the measured seed-variance
+floor), failing the pre-registered gate, and the fix was not adopted**
+(`reports/ITEM_3_RESULTS.md`). **Stated plainly: Axis 5's loss-dilution
+mechanism is now confirmed causal and demonstrably fixable, but the fix
+that closes it trades away pixel fidelity by more than this project's own
+pre-registered tolerance allows - a known, diagnosed, and still
+unaddressed limitation of the shipped model.**
 
 ## What this pass adds to the submission's real story
 
