@@ -1,0 +1,14 @@
+{
+  "n_val_images": 712,
+  "per_image_mean_spearman_r": 0.22635134321510234,
+  "per_image_median_spearman_r": 0.20945730067156895,
+  "per_image_std_spearman_r": 0.12559775007138996,
+  "pooled_spearman_r": 0.43445212605648187,
+  "pooled_spearman_p": 0.0,
+  "pooled_n_pixels_sampled": 356000,
+  "best_epoch": 13,
+  "best_val_l1_loss": 0.032419697153899404,
+  "wall_clock_sec": 70.47726678848267,
+  "passes_preregistered_gate_r_ge_0.3": false,
+  "head_checkpoint": "/workspace/kla-restoration-phase2/checkpoints/item3_confidence_head.pt"
+}
