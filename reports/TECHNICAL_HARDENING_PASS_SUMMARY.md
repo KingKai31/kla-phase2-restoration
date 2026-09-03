@@ -7,11 +7,22 @@ relevance. Same standard as the rest of this project: every comparison
 pre-registered before running, every result reported honestly whether
 positive or negative.
 
-**Bottom line: the shipped model is unchanged. `checkpoints/stage_a_best.pt`
-(23.483dB / 0.598 SSIM) remains the final model.** Every axis either
-confirmed it was already well-chosen or surfaced a real, disclosed
-limitation that a cheap fix didn't resolve - no axis produced a result
-that cleared its own pre-registered adoption bar.
+**Bottom line, at the time this pass concluded: the shipped model was
+unchanged. `checkpoints/stage_a_best.pt` (23.483dB / 0.598 SSIM)
+remained the final model.** Every axis in *this* pass either confirmed
+Stage A was already well-chosen or surfaced a real, disclosed limitation
+that a cheap fix didn't resolve - no axis here cleared its own
+pre-registered adoption bar.
+
+**Superseded same-day by a subsequent improvement pass, acting on this
+pass's own audit:** an exhaustive technical audit (`reports/TECHNICAL_AUDIT.md`)
+built directly on these five axes' findings and ranked "zero data
+augmentation" as the single highest-leverage untried fix. That lever was
+then tried and won decisively - **+0.315dB internal, +0.243dB on the
+official test set (p<1e-49)** - and the shipped model changed. Full
+result: `reports/ITEM_1_2_RESULTS.md`. This document's numbers and
+"unchanged" conclusion are accurate as a historical record of what this
+specific pass found; they are not the final state of the project.
 
 ## The single most important finding in this pass: the model loses to a naive baseline on real structural-edge preservation
 
@@ -94,6 +105,12 @@ The proposed lightweight fix (double the existing Sobel loss weight,
 tested in Axis 1b) showed no meaningful difference from baseline -
 **this specific gap is not solved by that cheap lever.**
 (`reports/HARDENING_AXIS_3_AND_5.md`, `reports/AXIS_1B_RESULTS.md`)
+**Later diagnosed mechanistically, still unresolved:** `reports/TECHNICAL_AUDIT.md`
+§9 traced this to the Charbonnier-dominated loss's median-estimator
+behavior (compounded by ~10% real inference-blur asymmetry, measured).
+The improvement pass that followed (`reports/ITEM_1_2_RESULTS.md`)
+improved reconstruction quality broadly but did not touch the loss
+function, so this gap is expected to persist unchanged.
 
 ## What this pass adds to the submission's real story
 

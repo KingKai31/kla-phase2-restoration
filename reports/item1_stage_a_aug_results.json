@@ -1,0 +1,89 @@
+{
+  "config": {
+    "augment": true,
+    "icnr": true,
+    "ema_decay": 0.999,
+    "lr": 0.0002,
+    "batch_size": 16,
+    "seed": 123
+  },
+  "baseline_shipped": {
+    "psnr": 23.483065963141588,
+    "ssim": 0.5975757922307565,
+    "lpips": 0.18612538378036927
+  },
+  "epochs_run": 195,
+  "best": {
+    "raw": {
+      "psnr": 23.79782161993114,
+      "ssim": 0.6132320328156995,
+      "epoch": 98
+    },
+    "ema": {
+      "psnr": 23.794913165012357,
+      "ssim": 0.6138209910238214,
+      "epoch": 164
+    }
+  },
+  "train_wall_clock_sec": 3889.839661359787,
+  "mean_epoch_time_sec": 19.80032746241643,
+  "final_eval": {
+    "raw_best_blend0.15": {
+      "psnr": 23.79782161993114,
+      "ssim": 0.6132320328156995,
+      "lpips": 0.1666160885380644,
+      "checker_ratio_pred_over_gt": 0.20368825590708228,
+      "epoch": 98
+    },
+    "raw_best_blend0.00": {
+      "psnr": 23.733183258557535,
+      "ssim": 0.614705129995561,
+      "lpips": 0.15233273828778876,
+      "checker_ratio_pred_over_gt": 0.2256469456494162,
+      "epoch": 98
+    },
+    "ema_best_blend0.15": {
+      "psnr": 23.794913165012357,
+      "ssim": 0.6138209910238214,
+      "lpips": 0.16407680494731733,
+      "checker_ratio_pred_over_gt": 0.20645930186261474,
+      "epoch": 164
+    },
+    "ema_best_blend0.00": {
+      "psnr": 23.7267276106864,
+      "ssim": 0.6151677330946371,
+      "lpips": 0.150745519442128,
+      "checker_ratio_pred_over_gt": 0.22904932973631265,
+      "epoch": 164
+    }
+  },
+  "gate1_new_checkpoint": {
+    "candidate": "raw_best_blend0.15",
+    "psnr": 23.79782161993114,
+    "ssim": 0.6132320328156995,
+    "lpips": 0.1666160885380644,
+    "psnr_gain_vs_shipped": 0.31475565678955064,
+    "pass_psnr": true,
+    "pass_ssim": true,
+    "pass_lpips": true,
+    "baseline_lpips_used": 0.18612538378036927,
+    "PASS": true
+  },
+  "gate2_drop_blur": {
+    "psnr_blend0.15": 23.79782161993114,
+    "psnr_blend0.00": 23.733183258557535,
+    "ssim_blend0.15": 0.6132320328156995,
+    "ssim_blend0.00": 0.614705129995561,
+    "checker_ratio_blend0.00": 0.2256469456494162,
+    "checker_ratio_blend0.15": 0.20368825590708228,
+    "pass_psnr": false,
+    "pass_ssim": true,
+    "pass_checker": true,
+    "PASS": false
+  },
+  "checkpoints": {
+    "raw_best": "/workspace/kla-restoration-phase2/checkpoints/stage_a_aug_raw_best.pt",
+    "ema_best": "/workspace/kla-restoration-phase2/checkpoints/stage_a_aug_ema_best.pt"
+  },
+  "gpu": "NVIDIA A100-SXM4-80GB"
+}

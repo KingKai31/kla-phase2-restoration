@@ -1,17 +1,31 @@
 # Final submission verification — Phase 2 (SEM/NFFA-EUROPE data)
 
 **Verdict: submission-ready.** Every hard-gate requirement passes,
-re-verified against the exact shipped checkpoint and the exact
+re-verified against the exact shipped checkpoint (now the improved Item 1
+model, see below) and the exact
 `requirements.txt`/`submission_requirements.txt` files as they currently
 exist. Full detail: `reports/run_py_compliance_checklist.md`.
 
+**Same-day improvement pass, acting on the audit below - the shipped
+model changed.** Dihedral augmentation + EMA + ICNR init (one retrain,
+pre-registered gates): **+0.315dB internal, +0.243dB on the official
+test set (p<1e-49)** over the original Stage A - the single largest,
+most decisive result in this project, confirmed on both the internal
+split and the real benchmark. Full compliance chain re-verified on the
+new checkpoint. One related gate (drop the inference blur, now that
+ICNR suppresses checkerboard at the source) failed honestly and the blur
+stays. Full writeup: `reports/ITEM_1_2_RESULTS.md`.
+
 **Post-ship technical hardening pass** (5 axes - reconstruction quality,
 perceptual quality, generalization evidence, architecture, defect
-relevance - each pre-registered and tested with real evidence): the
-shipped model is unchanged by this pass. Every comparison either
-confirmed Stage A was already well-chosen or surfaced a real, disclosed
-limitation that a cheap fix did not resolve. Full consolidated summary:
-`reports/TECHNICAL_HARDENING_PASS_SUMMARY.md`.
+relevance - each pre-registered and tested with real evidence, run
+BEFORE the improvement pass above): every comparison in that pass either
+confirmed the-then-shipped Stage A was already well-chosen or surfaced a
+real, disclosed limitation that a cheap fix did not resolve - the model
+was unchanged by *that* pass specifically. Full consolidated summary:
+`reports/TECHNICAL_HARDENING_PASS_SUMMARY.md`. Its findings motivated the
+exhaustive audit (`reports/TECHNICAL_AUDIT.md`) that in turn produced the
+improvement pass above.
 
 **The single most important finding from that pass, stated plainly here
 and not softened:** on real pixel-level segmentation masks from a
@@ -27,6 +41,16 @@ edge-weight term - was tried and did not close the gap** (composite
 0.6601 vs. baseline 0.6600, essentially no change). See Section D and
 `reports/HARDENING_AXIS_3_AND_5.md` for the full method and numbers.
 
+**Status after the improvement pass above: unchanged, and expected to
+be.** `reports/TECHNICAL_AUDIT.md` §9 diagnosed the mechanism as the
+Charbonnier-dominated loss's median-estimator behavior, not
+reconstruction quality broadly - the augmentation/EMA/ICNR changes that
+produced the PSNR/SSIM/LPIPS win above do not touch the loss function or
+the diluted Sobel term, so this gap is not expected to have moved and was
+not re-measured. The loss redesign that follows directly from the
+diagnosis (a boundary-masked edge term) was scoped as a lower-priority,
+higher-risk item given the deadline and was not attempted this pass.
+
 ---
 
 ## A. Hard-gate requirements
@@ -41,18 +65,21 @@ caught by the ported regression test before shipping, not after).
 
 ---
 
-## B. Model quality — the full honest story, all three stages
+## B. Model quality — the full honest story, all three stages plus the improvement pass
 
-**Shipped model: `checkpoints/stage_a_best.pt`, trained on real data
-only.** Val PSNR=23.483dB, val SSIM=0.5976 (712 real leakage-checked val
-images, 20 clusters). This is not the only thing that was tried - the
-full arc below is the actual submission narrative, not a cleaned-up
-success story.
+**Shipped model: `checkpoints/stage_a_aug_raw_best.pt` (Stage A +
+dihedral augmentation + EMA-trained + ICNR init), trained on real data
+only.** Val PSNR=23.798dB, val SSIM=0.6132, val LPIPS=0.1666 (712 real
+leakage-checked val images, 20 clusters) - **+0.315dB over plain Stage A
+(23.483dB)**, per `reports/ITEM_1_2_RESULTS.md`. This is not the only
+thing that was tried - the full arc below is the actual submission
+narrative, not a cleaned-up success story.
 
 | Method | PSNR | SSIM | LPIPS | n |
 |---|---|---|---|---|
 | Classical baseline (bicubic + NLM, run.py's real fallback) | 20.273 | 0.5066 | 0.5128 | 712 |
-| **Stage A (shipped)** | **23.483** | **0.5976** | not computed† | 712 |
+| Stage A (original) | 23.483 | 0.5976 | 0.1861 | 712 |
+| **Stage A + aug/EMA/ICNR (shipped, final)** | **23.798** | **0.6132** | **0.1666** | 712 |
 | Stage B (real + 8,526 synthetic pairs) | 23.499 | 0.5950 | not computed† | 712 |
 
 † LPIPS wasn't part of Stage A/B's own per-image eval loop (only PSNR/SSIM
@@ -60,8 +87,10 @@ were tracked during training); not recomputed for this table since Stage
 B isn't shipping and the PSNR/SSIM comparison already answers the
 question each step needed.
 
-**The AI model gains +3.21dB PSNR over the classical baseline** - a real,
-large, unambiguous margin (n=712).
+**The final shipped model gains +3.53dB PSNR over the classical
+baseline internally** (+3.67dB on the official test set, below) - a real,
+large, unambiguous margin (n=712), now larger than plain Stage A's
++3.21dB thanks to the improvement pass.
 
 ### Stage A -> Stage B: a genuine, disclosed null result
 
@@ -113,8 +142,9 @@ bug found and fixed -> real negative result -> dropped).
   Stage B's synthetic augmentation - inconclusive on whether that's a
   data-coverage gap or something structural, since the flatness was
   uniform across all clusters, not localized. (`reports/phase2_deep_dive.md` Part 8)
-- **GT noise-ceiling check**: 27.6dB implied ceiling, well above Stage A's
-  23.483dB - not currently the binding constraint.
+- **GT noise-ceiling check**: 27.6dB implied ceiling, well above the
+  shipped model's 23.798dB - not currently the binding constraint, and
+  still real headroom after the improvement pass's +0.315dB gain.
 - **Multiple-comparisons correction** (`reports/MULTIPLE_COMPARISONS_CORRECTION.md`):
   applied to the two decision-relevant test families. Confidence-signal
   correlations unaffected. The ROI-loss hallucination check's raw p=0.039
@@ -140,9 +170,26 @@ available, not assumed necessary.
   `seed_worker`, `make_seeded_generator` - used in both Stage A and B
   training.
 - **Formal test suite**: `tests/test_run_py_robustness.py`, 25 tests,
-  25 passed against the real shipped checkpoint.
+  25 passed against the real shipped checkpoint. Extended with
+  `tests/test_src_modules.py` (24 more tests) after an exhaustive audit
+  found `src/` - the model, all loss terms, the synthetic degrader -  had
+  zero direct test coverage; also asserts `run.py`'s inlined model stays
+  AST-identical to `src/models/nafnet.py` rather than refactoring the
+  verified self-contained inference file. **49/49 pass.** Writing these
+  tests surfaced one real, previously-uncaught defect: `SobelEdgeLoss`'s
+  zero-padding makes image borders (1.56% of a real 256x256 image) carry
+  ~3.7x the interior mean gradient magnitude, scaling linearly with
+  border brightness - characterized as a test, not yet fixed (compounds
+  the Axis 5 dilution finding above).
 - **Real bug found and fixed**: PyWavelets missing (Section A) - the
   identical Phase 1 mistake on new infrastructure, caught before shipping.
+  A second real gap found the same way during the improvement pass:
+  `pytorch_msssim` was pinned nowhere despite `stageB_composite.py`
+  depending on it - installed and added to `requirements.txt`.
+- **Dead code removed**: `src/losses/charbonnier_msssim.py` -
+  `CharbonnierMSSSIMLoss` was never imported by any training script
+  (Stage A actually trains on `StageBCompositeLoss`, contradicting the
+  deleted file's own docstring) - found by the audit, deleted this pass.
 - **Data leakage checks, two kinds**: (1) source-image overlap between our
   4,785 real pairs and the external NFFA download - 0 candidate matches
   at a conservative perceptual-hash threshold (`reports/source_overlap_check.json`);
@@ -243,3 +290,14 @@ available, not assumed necessary.
   background at low priority, not blocking this submission** - whatever
   finishes is a bonus for any future extension, not a requirement this
   submission depends on.
+- **The improvement-pass Item 2 blur removal: dropped by its own
+  pre-registered gate**, not abandoned mid-attempt - ICNR was applied and
+  confirmed to suppress checkerboard at the source, but removing the
+  blur cost more PSNR than the pre-registered slack allowed. The blur
+  stays in `run.py`, unchanged. Full detail: `reports/ITEM_1_2_RESULTS.md`.
+- **Item 3 (boundary-masked loss redesign targeting the Axis 5 mechanism)
+  and Item 4 (multi-seed variance for the decision gates): deferred, not
+  attempted, given the deadline** - explicitly scoped as lower-priority/
+  higher-risk (Item 3) and lowest-leverage (Item 4) in the improvement
+  pass's own plan. The submission ships without them: a verified,
+  decisively-improved model, not an unverified, more-promising one.

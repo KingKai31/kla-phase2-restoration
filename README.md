@@ -11,21 +11,25 @@ labels ship with the delivery).
 ## Status: submission-ready
 
 **Official test-set results (KLA's Phase 2 test set, real GT, n=297,
-leakage-checked against training): PSNR=23.761dB, SSIM=0.609,
-LPIPS=0.194 - +3.43dB over the classical baseline (paired Wilcoxon
-p<1e-49, bootstrap 95% CI [+3.21, +3.66]).** Restored outputs are in
+leakage-checked against training): PSNR=24.004dB, SSIM=0.6257,
+LPIPS=0.1616 - +3.67dB over the classical baseline (paired Wilcoxon
+p<1e-49, bootstrap 95% CI [+3.44, +3.92]).** Restored outputs are in
 `test_predictions/`. Full writeup:
 **[reports/OFFICIAL_TEST_SET_RESULTS.md](reports/OFFICIAL_TEST_SET_RESULTS.md)**
 - these are the only numbers here measured against externally-released
 ground truth; everything below is the internal proxy split.
 
-**Shipped model: `checkpoints/stage_a_best.pt` (`models/checkpoint.pt` in
-the submission), trained on the real 4,785 pairs only.** Internal val
-PSNR=23.483dB, val SSIM=0.5976 (712-image leakage-checked val split). Full verification,
-the complete honest three-stage story (Stage A ships; a synthetic-data
-Stage B fine-tune was tried and gave a genuine null result; one targeted
-fix attempt failed its own pre-registered gate), and every disclosed
-limitation: **[reports/FINAL_SUBMISSION_VERIFICATION.md](reports/FINAL_SUBMISSION_VERIFICATION.md)**
+**Shipped model: Stage A + dihedral augmentation + EMA + ICNR init
+(`checkpoints/stage_a_aug_raw_best.pt`, `models/checkpoint.pt` in the
+submission), trained on the real 4,785 pairs only.** Internal val
+PSNR=23.798dB, val SSIM=0.6132 (712-image leakage-checked val split) -
+**+0.315dB over the original Stage A (23.483dB), confirmed on the
+official test set too (+0.243dB, p<1e-49)**, per a same-day improvement
+pass: **[reports/ITEM_1_2_RESULTS.md](reports/ITEM_1_2_RESULTS.md)**.
+Full verification, the complete honest story (Stage A -> Stage B null
+result -> spectral-fix failure -> technical hardening pass -> this
+improvement pass), and every disclosed limitation:
+**[reports/FINAL_SUBMISSION_VERIFICATION.md](reports/FINAL_SUBMISSION_VERIFICATION.md)**
 - start there.
 
 Run inference with:
@@ -89,7 +93,23 @@ wrong-cwd combined check, real timing).
     training-range noise-severity stress test, and real-mask structural-
     edge preservation. Every comparison either confirmed Stage A was
     already well-chosen or surfaced a real, disclosed limitation that a
-    cheap fix didn't resolve - **the shipped model is unchanged.**
+    cheap fix didn't resolve - **the shipped model was unchanged after
+    this pass.**
+11. **An exhaustive technical audit** (`reports/TECHNICAL_AUDIT.md`):
+    9 dimensions rated against best practice with file:line citations,
+    ranked by expected leverage. Diagnosed the Axis 5 edge-preservation
+    gap mechanistically (a Charbonnier-dominated median-estimating loss,
+    ~10% of it a measured inference-blur asymmetry) and flagged zero data
+    augmentation as the highest-leverage untried fix.
+12. **A same-day improvement pass acting on that audit**
+    (`reports/ITEM_1_2_RESULTS.md`): dihedral augmentation + EMA + ICNR
+    init, one retrain, pre-registered gates. **A real, decisive win -
+    +0.315dB internal (12x the measured seed-variance floor), confirmed
+    on the official test set (+0.243dB, p<1e-49). The shipped model
+    changed.** A second gate (drop the inference blur now that ICNR
+    suppresses checkerboard at the source) failed honestly - the blur
+    stays. Full compliance chain (25-test suite, fresh-venv +
+    no-internet + wrong-cwd) re-verified on the new checkpoint.
 
 **Phase 1's fitted noise-model numbers do NOT apply to this dataset** and
 are not carried over anywhere in this repo - every number here is
