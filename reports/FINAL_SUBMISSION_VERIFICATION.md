@@ -13,6 +13,20 @@ confirmed Stage A was already well-chosen or surfaced a real, disclosed
 limitation that a cheap fix did not resolve. Full consolidated summary:
 `reports/TECHNICAL_HARDENING_PASS_SUMMARY.md`.
 
+**The single most important finding from that pass, stated plainly here
+and not softened:** on real pixel-level segmentation masks from a
+genuinely different SEM dataset (Ni-WC metal-matrix composite, CC-BY-4.0),
+the shipped model preserves only **68.7%** of the true edge magnitude at
+real annotated structural boundaries after restoration - a naive
+**bicubic+NLM classical baseline preserves 88.1%.** This is the only
+place in this entire project where a hand-built classical method beats
+the trained model, and it does so on the metric closest to actual
+inspection use (does a real structural boundary survive restoration).
+**The obvious cheap fix - doubling the loss stack's existing Sobel
+edge-weight term - was tried and did not close the gap** (composite
+0.6601 vs. baseline 0.6600, essentially no change). See Section D and
+`reports/HARDENING_AXIS_3_AND_5.md` for the full method and numbers.
+
 ---
 
 ## A. Hard-gate requirements
@@ -148,6 +162,24 @@ available, not assumed necessary.
 
 ## D. Known limitations (disclosed, not hidden)
 
+**Leading with the most important one, not burying it in the list:**
+
+- **On real annotated structural boundaries, the model loses to a naive
+  classical baseline - the single most uncomfortable finding in this
+  project.** Measured on real pixel-level segmentation masks from a
+  genuinely different SEM dataset (Ni-WC metal-matrix composite,
+  CC-BY-4.0 - technical hardening pass Axis 5): the model preserves only
+  **68.7%** of the true edge magnitude at real annotated boundaries after
+  restoration, versus **88.1%** for bicubic+NLM. PSNR and SSIM do not
+  specifically reward "did the real boundary survive" - a model can look
+  good on every headline metric in this document and still lose to a
+  naive method on the property an inspection use case actually cares
+  about. **The obvious cheap fix (doubling the existing Sobel edge-loss
+  weight, Axis 1b's `stronger_sobel` config, pre-registered before
+  running) did not close this gap** (composite 0.6601 vs. baseline
+  0.6600 - no meaningful change). Not resolved as of this submission.
+  Full method and numbers: `reports/HARDENING_AXIS_3_AND_5.md`,
+  `reports/AXIS_1B_RESULTS.md`.
 - **Only 4 of 10 real NFFA-EUROPE categories were ever downloaded and
   used** (Biological, Fibres, Films_Coated_Surface, and later
   MEMS_devices_and_electrodes, folded into the technical hardening
@@ -156,12 +188,6 @@ available, not assumed necessary.
   `reports/HARDENING_DISK_QUOTA_INCIDENT.md`) made continuing the
   download risky, and Axis 1a already showed a 4th category didn't
   change the outcome, so there was no strong case to keep chasing more.
-- **The model preserves real structural edges worse than a naive
-  classical baseline on out-of-domain content** (68.7% vs. 88.1% edge
-  magnitude at real annotated boundaries, Ni-WC external data,
-  technical hardening pass Axis 5) - a real, disclosed gap; doubling the
-  existing Sobel loss weight (the cheapest available fix) did not close
-  it.
 - **The synthetic generator's spectral deficit is confirmed as a
   generation-mechanism problem, not a data-volume one** (technical
   hardening pass Axis 1a: a 43% larger, more diverse synthetic pool
@@ -202,11 +228,17 @@ available, not assumed necessary.
 - **The ROI-preservation loss (6th loss term): dropped by its own
   pre-registered rule** - Stage B (and thus this submission) uses the
   plain validated 5-term `StageBCompositeLoss`.
-- **Tier 2 external datasets (Zenodo: Ni-WC metal composite, steel/hydrogen-
-  embrittlement, fiber-composite): not pursued.** B2SHARE's Tier 1 data was
-  already progressing and sufficient; a real, separate TLS-connectivity
-  issue to Zenodo was also found and not chased further, since it wasn't
-  needed once Tier 1 proved usable.
+- **Tier 2 external datasets: Ni-WC metal composite (Zenodo, CC-BY-4.0)
+  WAS pursued** - used directly in the technical hardening pass for
+  Axis 3a (external validation) and Axis 5 (real-mask structural-edge
+  preservation), the source of this document's most important finding
+  (Section D). The other two Tier 2 candidates (steel/hydrogen-
+  embrittlement, fiber-composite) were not pursued - Ni-WC alone was
+  sufficient for what the hardening pass needed, and a real, separate
+  TLS-connectivity issue to Zenodo (from the training pod specifically,
+  not from the machine that eventually downloaded Ni-WC) was found
+  earlier in the project and not worth chasing further once Tier 1 and
+  Ni-WC together proved usable.
 - **Remaining 6/10 Tier 1 NFFA categories: still downloading in the
   background at low priority, not blocking this submission** - whatever
   finishes is a bonus for any future extension, not a requirement this

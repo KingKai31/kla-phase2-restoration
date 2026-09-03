@@ -13,6 +13,35 @@ confirmed it was already well-chosen or surfaced a real, disclosed
 limitation that a cheap fix didn't resolve - no axis produced a result
 that cleared its own pre-registered adoption bar.
 
+## The single most important finding in this pass: the model loses to a naive baseline on real structural-edge preservation
+
+**Stated plainly, not softened:** on real pixel-level segmentation masks
+from genuinely different SEM data (Ni-WC metal-matrix composite,
+Zenodo CC-BY-4.0), the shipped model preserves only **68.7%** of the true
+edge magnitude at real annotated structural boundaries after
+restoration - a naive **bicubic+NLM classical baseline preserves 88.1%,
+substantially more.** This is the only place in this entire project,
+across both phases, where a hand-built classical method beats the
+trained model on a metric that speaks directly to inspection use: whether
+a real structural boundary survives restoration.
+
+**The obvious cheap fix was tried and did not work.** Doubling the
+weight of the loss stack's existing Sobel edge term (Axis 1b's
+`stronger_sobel` config, pre-registered before running) produced
+essentially no change (composite 0.6601 vs. baseline's 0.6600) - this
+specific gap is not caused by the edge loss simply being underweighted,
+and is not closed by turning that one existing knob further.
+
+**Why this matters more than any other finding here:** PSNR and SSIM
+measure average pixel fidelity: they do not specifically reward "did the
+real boundary between two structures survive." A restoration model built
+for an inspection use case can look good on every headline metric in
+this report and still under-perform a naive method on the one property
+inspection actually cares about. This is reported with the same weight
+as every positive finding in this project, not buried as one bullet among
+five axes - see Axis 5 below and `reports/HARDENING_AXIS_3_AND_5.md` for
+the full method and numbers.
+
 ## Axis 1 — reconstruction quality: three independent confirmations that Stage A was already near its ceiling
 
 - **1c (schedule fix):** re-ran Stage A with the already-validated
