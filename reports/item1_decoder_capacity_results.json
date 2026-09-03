@@ -1,0 +1,14 @@
+{
+  "init_checkpoint": "/workspace/kla-restoration-phase2/models/checkpoint.pt",
+  "pre_train_metrics": {
+    "psnr": 23.733183258557535,
+    "ssim": 0.614705129995561
+  },
+  "n_params": 6824548,
+  "epochs_run": 18,
+  "best_epoch": 2,
+  "best_val_psnr": 23.73069556226458,
+  "best_val_ssim": 0.6138256101374061,
+  "wall_clock_sec": 317.40318179130554,
+  "checkpoint": "/workspace/kla-restoration-phase2/checkpoints/item1_decoder_capacity_best.pt"
+}
